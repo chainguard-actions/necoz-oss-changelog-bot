@@ -1,40 +1,742 @@
-# nyaomaru/changelog-bot
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/necoz-oss/changelog-bot/main/public/ChangelogBot_logo02.png" alt="changelog-bot type logo" width="360" />
+</h1>
 
-Auto-update CHANGELOG.md from git history and release notes, optionally using an LLM. Creates a PR with the changes.
+<p align="center">
+    <img src="https://raw.githubusercontent.com/necoz-oss/changelog-bot/main/public/ChangelogBot_image.png" width="600px" align="center" alt="changelog-bot logo" />
+</p>
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/nyaomaru/changelog-bot](https://github.com/nyaomaru/changelog-bot).
+Releases should feel exciting, not tedious.
 
-## Versions
+`@nyaomaru/changelog-bot` 🤖 turns your Git history and release notes into a polished changelog entry (and optional PR) in a single run. Drop it into CI, run it locally, or hand it to your release captain—either way, you ship with a crisp changelog and zero copy-paste fatigue.
 
-| Version | Tag | Upstream commit | Hardening report |
-|---------|-----|-----------------|------------------|
-| v0.10.0 | [`v0.10.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.10.0) | [`b468667`](https://github.com/nyaomaru/changelog-bot/commit/b4686678630b47422fb60cb5feb64aaac358a2a6) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.10.0/HARDENING.md) |
-| v0.10.1 | [`v0.10.1`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.10.1) | [`426d4a5`](https://github.com/nyaomaru/changelog-bot/commit/426d4a5ec5379c579aaec54a76f634454cd3a751) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.10.1/HARDENING.md) |
-| v0.11.0 | [`v0.11.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.11.0) | [`8e6a336`](https://github.com/nyaomaru/changelog-bot/commit/8e6a336f6568fdf3685490a4e9ca3fe70983b99d) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.11.0/HARDENING.md) |
-| v0.4.1 | [`v0.4.1`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.4.1) | [`c8c1d82`](https://github.com/nyaomaru/changelog-bot/commit/c8c1d82e39b90ca6274b5e8c723273d89b1d3b42) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.4.1/HARDENING.md) |
-| v0.4.2 | [`v0.4.2`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.4.2) | [`ad2104e`](https://github.com/nyaomaru/changelog-bot/commit/ad2104ec52ca64d900f958060b0a40b9f32ed989) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.4.2/HARDENING.md) |
-| v0.5.0 | [`v0.5.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.5.0) | [`8ef5459`](https://github.com/nyaomaru/changelog-bot/commit/8ef5459de9adde89fd103f68addef041f153199d) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.5.0/HARDENING.md) |
-| v0.5.1 | [`v0.5.1`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.5.1) | [`18be1e9`](https://github.com/nyaomaru/changelog-bot/commit/18be1e9f2dcca7ab09af74d30862df1ce974791d) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.5.1/HARDENING.md) |
-| v0.6.0 | [`v0.6.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.0) | [`0f96bfb`](https://github.com/nyaomaru/changelog-bot/commit/0f96bfb9bf1b66c00e1161b793c893316088f55d) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.0/HARDENING.md) |
-| v0.6.1 | [`v0.6.1`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.1) | [`0b83a19`](https://github.com/nyaomaru/changelog-bot/commit/0b83a198ce22a3aad3aec6a5161c318eb5ac8d30) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.1/HARDENING.md) |
-| v0.6.10 | [`v0.6.10`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.10) | [`f5440fb`](https://github.com/nyaomaru/changelog-bot/commit/f5440fb86a92fb837a29488aa458db10a09ca2f9) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.10/HARDENING.md) |
-| v0.6.11 | [`v0.6.11`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.11) | [`8d8e260`](https://github.com/nyaomaru/changelog-bot/commit/8d8e260e7a9e4f9840a62e62517c486be325c995) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.11/HARDENING.md) |
-| v0.6.12 | [`v0.6.12`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.12) | [`4e1d2d6`](https://github.com/nyaomaru/changelog-bot/commit/4e1d2d68551a256a35554e3b42b2417e2b608f17) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.12/HARDENING.md) |
-| v0.6.13 | [`v0.6.13`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.13) | [`1312c1c`](https://github.com/nyaomaru/changelog-bot/commit/1312c1cebb3ea9e7336f851dcd40a08b09950db4) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.13/HARDENING.md) |
-| v0.6.14 | [`v0.6.14`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.14) | [`77dfdac`](https://github.com/nyaomaru/changelog-bot/commit/77dfdacf969f71644845b91be9812b34b5ae72ea) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.14/HARDENING.md) |
-| v0.6.2 | [`v0.6.2`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.2) | [`c5f6117`](https://github.com/nyaomaru/changelog-bot/commit/c5f611708171c88d292656004b48d5c6342b8ed1) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.2/HARDENING.md) |
-| v0.6.4 | [`v0.6.4`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.4) | [`99b9bdd`](https://github.com/nyaomaru/changelog-bot/commit/99b9bdd9f68e10a1c3def5f7dc05d2c114a5d682) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.4/HARDENING.md) |
-| v0.6.5 | [`v0.6.5`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.5) | [`6af81a9`](https://github.com/nyaomaru/changelog-bot/commit/6af81a9665def4c947cf54854af4dac0a47dd57f) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.5/HARDENING.md) |
-| v0.6.6 | [`v0.6.6`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.6) | [`e34e788`](https://github.com/nyaomaru/changelog-bot/commit/e34e7889a572fa36aeb2dc04f53b5c6b2b7a2cea) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.6/HARDENING.md) |
-| v0.6.7 | [`v0.6.7`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.7) | [`21de748`](https://github.com/nyaomaru/changelog-bot/commit/21de748707a74dd63110f00c2fe6aac94ca5ab51) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.7/HARDENING.md) |
-| v0.6.8 | [`v0.6.8`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.8) | [`c0ad031`](https://github.com/nyaomaru/changelog-bot/commit/c0ad031769871505be178d0f4962e3d5b62e275e) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.8/HARDENING.md) |
-| v0.6.9 | [`v0.6.9`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.6.9) | [`b9d0e6a`](https://github.com/nyaomaru/changelog-bot/commit/b9d0e6a9d197acd2e965c8d97e6df19904221687) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.6.9/HARDENING.md) |
-| v0.7.0 | [`v0.7.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.7.0) | [`491f220`](https://github.com/nyaomaru/changelog-bot/commit/491f220589bc7860605efb33bb2c64256a98bc94) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.7.0/HARDENING.md) |
-| v0.8.0 | [`v0.8.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.8.0) | [`20b96c9`](https://github.com/nyaomaru/changelog-bot/commit/20b96c98d6e4b61466c9f8e3911435f78975692e) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.8.0/HARDENING.md) |
-| v0.9.0 | [`v0.9.0`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.9.0) | [`7cbd36c`](https://github.com/nyaomaru/changelog-bot/commit/7cbd36cfb2a705e1a23e890bdb062e1ab2ab3a17) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.9.0/HARDENING.md) |
-| v0.9.1 | [`v0.9.1`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.9.1) | [`770f545`](https://github.com/nyaomaru/changelog-bot/commit/770f545727a96d730a27a125cabdab4571447bd0) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.9.1/HARDENING.md) |
-| v0.9.2 | [`v0.9.2`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.9.2) | [`f0871e5`](https://github.com/nyaomaru/changelog-bot/commit/f0871e5fb8e5237a174663f4e7eb6fae48110959) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.9.2/HARDENING.md) |
-| v0.9.3 | [`v0.9.3`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/tree/v0.9.3) | [`7e0e7c7`](https://github.com/nyaomaru/changelog-bot/commit/7e0e7c7f6b2dfca5dbee424ce04c9793c6aa3845) | [`HARDENING.md`](https://github.com/chainguard-actions/nyaomaru-changelog-bot/blob/v0.9.3/HARDENING.md) |
+The GitHub repository is [necoz-oss/changelog-bot](https://github.com/necoz-oss/changelog-bot). The npm package name is still `@nyaomaru/changelog-bot`. In workflows, use `necoz-oss/changelog-bot`. GitHub Actions does not follow repository redirects for actions or reusable workflows, so keep `uses:` on the new owner. Web and git URLs for `nyaomaru/changelog-bot` still redirect.
+
+## Why changelog-bot?
+
+- **Automated storytelling:** Combines commit history, PR titles, and release notes to produce human-ready changelog sections.
+- **LLM superpowers (optional):** Connect OpenAI or Anthropic for tone-aware summaries or skip API keys entirely and rely on a robust heuristic fallback.
+- **PR-ready output:** Can open a pull request with updated changelog, compare links, and release notes already wired up.
+- **Safe defaults:** Detects duplicate versions, keeps compare links current, and won’t fail a release if AI is down.
+- **CI-native:** Works as a GitHub Action, reusable workflow, or plain CLI—no fragile scripting required.
+
+> [!IMPORTANT]
+> This project is currently in its early stages (`v0.0.x`).
+> Interfaces and behaviors may change without notice until `v1.0.0`.
+> If you plan to integrate it into production workflows, please pin the exact version to avoid unexpected breaking changes.
+
+## Quick start
+
+Run the published CLI right away—no local tooling prep required.
+
+Requires Node.js 22.23.4+, 24.22.1+, or 26.12.1+; Node.js 24.22.1 or later in
+the 24.x LTS line is recommended.
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot --help
+```
+
+Prefer to keep it on hand? Add it to your dev dependencies and call it from your scripts (or directly via `pnpm exec`):
+
+```sh
+pnpm add -D @nyaomaru/changelog-bot
+pnpm exec changelog-bot --help
+```
+
+Using it in CI? Jump to [GitHub Actions integration](#github-actions-integration) for drop-in workflow examples.
+
+### Options
+
+| Option                   | Description                                              | Default                                |
+| ------------------------ | -------------------------------------------------------- | -------------------------------------- |
+| `--repo-path`            | Path to repository root                                  | `.`                                    |
+| `--config`               | Path to JSON config file                                 | `changelog-bot.config.json` if present |
+| `--changelog-path`       | Path to CHANGELOG file                                   | `CHANGELOG.md`                         |
+| `--base-branch`          | Base branch for PR                                       | `main`                                 |
+| `--provider`             | LLM provider (`openai`, `anthropic`, `gemini`, or `xai`) | `openai`                               |
+| `--release-tag`          | Git ref (tag or HEAD) to generate release for            | latest tag or HEAD                     |
+| `--release-name`         | Display name for version (without `v`)                   | derived from tag                       |
+| `--release-body`         | Additional release notes body                            | `""`                                   |
+| `--language`             | Language for generated changelog prose                   | `en`                                   |
+| `--instructions`         | Additional changelog writing/grouping instructions       | unset                                  |
+| `--instructions-file`    | Path to a file with additional instructions              | unset                                  |
+| `--dry-run`              | Print updated CHANGELOG to stdout, don’t write file      | `false`                                |
+| `--dry-run-json-report`  | Print dry-run provider diagnostics as JSON               | `false`                                |
+| `--fail-on-llm-error`    | Fail instead of falling back when provider calls fail    | `false`                                |
+| `--require-provider`     | Fail when the selected provider API key is missing       | `false`                                |
+| `--no-ai`                | Skip all provider calls and use deterministic output     | `false`                                |
+| `--why`                  | Extract short WHY notes from PR descriptions             | `false`                                |
+| `--why-engine`           | WHY engine (`llm` or experimental `jev`)                 | `llm`                                  |
+| `--why-max-prs`          | Maximum PRs to inspect for WHY extraction                | `30`                                   |
+| `--why-max-chars-per-pr` | Maximum candidate characters sent per PR                 | `800`                                  |
+| `--why-confidence`       | Minimum WHY confidence (`low`, `medium`, `high`)         | `medium`                               |
+| `--why-label`            | Label rendered before WHY notes                          | `Why`                                  |
+
+## Examples
+
+### Dry-run for latest release
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot \
+  --release-tag HEAD \
+  --release-name 0.1.0-dev \
+  --changelog-path CHANGELOG.md \
+  --provider openai \
+  --dry-run
+```
+
+Dry-runs print provider diagnostics before the generated changelog so you can
+confirm whether an LLM request was used or the run fell back. Add
+`--dry-run-json-report` to print that diagnostics block as JSON with `provider`,
+`model`, `aiUsed`, `fallbackReasons`, and prompt customization diagnostics.
+
+### Generate changelog for a tagged release
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot \
+ --release-tag vx.y.z \
+ --release-name x.y.z \
+ --changelog-path CHANGELOG.md \
+ --provider openai
+```
+
+### Run without AI keys (fallback)
+
+If the selected provider API key is not set, the CLI skips model calls and builds a heuristic section from git logs (or uses GitHub Release Notes when provided). The PR body includes a note with the fallback reason, so everyone knows the run was deterministic. Use `--require-provider` to fail instead when the key is missing, `--fail-on-llm-error` to fail on provider API/schema failures, or `--no-ai` to skip provider calls intentionally.
+
+```sh
+# No AI keys in env
+pnpm dlx @nyaomaru/changelog-bot --release-tag HEAD --release-name 1.2.3
+```
+
+Example PR body suffix:
+
+```
+Note: Generated without LLM. Reason: Missing API key for provider: openai.
+```
+
+### Extract WHY notes from PR descriptions
+
+WHY extraction is off by default because it reads PR descriptions and makes an
+extra provider call. Enable it when you want each high-signal changelog item to
+include a short reason for the change:
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot \
+  --release-tag HEAD \
+  --release-name 1.2.3 \
+  --why \
+  --why-label Reason
+```
+
+WHY notes are only considered for `Added`, `Changed`, `Fixed`, and `Breaking`
+items. Maintenance, dependency, docs, and chore items are skipped. If a PR
+description does not clearly explain the reason, or the local trust score and
+provider confidence do not agree, changelog-bot writes no WHY note for that
+item. With `--fail-on-llm-error`, provider failures fail the run; otherwise the
+main changelog still proceeds and WHY extraction is skipped with a diagnostic
+reason.
+
+The preprocessor recognizes common reason/context section headings in English,
+Spanish, French, German, Portuguese, Italian, Dutch, Japanese, Chinese, Korean,
+and Russian. This is a heading-alias list, not a hard language limit: compact PR
+descriptions in other languages can still reach provider judgment, and missing
+or unclear evidence is still omitted rather than guessed. A `Description`
+section can also supply WHY evidence when its prose explicitly marks the reason,
+for example with `WHY:`, `because`, or `in order to`.
+
+### Experiment with TypeSafe Jev for WHY selection
+
+Jev is an opt-in WHY-only engine; it is not a `--provider` value and does not
+generate the changelog itself. It independently evaluates whether each supplied
+PR-description candidate explicitly states a reason and whether that reason
+applies to the changelog change, then renders the strongest accepted source text
+without paraphrasing it. This keeps the WHY note evidence-backed despite Jev's
+non-generative API.
+
+```sh
+export TYPESAFE_API_KEY=ts-xxxx
+pnpm dlx @nyaomaru/changelog-bot \
+  --release-tag HEAD \
+  --release-name 1.2.3 \
+  --why \
+  --why-engine jev \
+  --dry-run
+```
+
+`TYPESAFE_MODEL` optionally overrides the default `jev-latest`. The engine
+retries TypeSafe's retryable `429` and `529` responses with local exponential
+backoff, honoring server retry hints up to 30 seconds. Each request also times
+out after 30 seconds.
+`--no-ai` still disables this experimental path, and missing TypeSafe credentials
+skip WHY extraction with a diagnostic reason.
+
+The composite Action accepts `why-engine: jev`; the reusable workflow accepts
+`why_engine: jev`. Pass `TYPESAFE_API_KEY` through the Action step environment
+or reusable-workflow secret respectively.
+
+Jev accepts a candidate only when both its explicit-rationale probability and
+its change-relevance probability are at least `0.50`. It maps the lower of those
+two probabilities to `low` at `0.50` or greater, `medium` at `0.60` or greater
+(the default), and `high` at `0.80` or greater. These experimental thresholds
+may change as the evaluation corpus grows.
+
+### Evaluate Jev WHY selection
+
+`pnpm eval:why` runs the labeled WHY corpus through Jev and one existing LLM
+provider, then prints precision, recall, F1, source-candidate preservation,
+per-case selections, latency, failures, and API-reported token usage as JSON.
+Preservation measures
+whether an engine returned the original candidate verbatim; it is diagnostic for
+Jev and not a quality comparison with LLM-generated paraphrases. Set
+`TYPESAFE_API_KEY` and the selected provider key; `WHY_EVALUATION_PROVIDER`
+optionally selects `openai`, `anthropic`, or `gemini` and defaults to `openai`.
+
+Token usage supports cost comparison against each provider's current billing
+rate. The runner deliberately does not estimate currency because model prices
+and account contracts can differ.
+
+For Jev, the report also includes Brier score, mean probability for labeled
+positive and negative candidates, and the precision / recall / F1 trade-off at
+the experimental `0.50`, `0.60`, and `0.80` thresholds. A case may label more
+than one candidate as acceptable when each is valid source evidence.
+
+The corpus includes repository PR material and boundary fixtures, including an
+explicit but unrelated rationale. It is intended to guide threshold and
+relevance changes; it does not claim that either engine is production-ready.
+
+### Force a specific model (example: gpt-4o-mini)
+
+```sh
+export OPENAI_MODEL=gpt-4o-mini
+export OPENAI_API_KEY=sk-xxxx
+pnpm dlx @nyaomaru/changelog-bot --release-tag HEAD --release-name 1.0.0 --dry-run
+```
+
+### Customize generated changelog style
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot \
+  --release-tag HEAD \
+  --release-name 1.0.0 \
+  --language ja \
+  --instructions-file .github/changelog-instructions.md \
+  --dry-run
+```
+
+Custom instructions are additive: the bot still enforces its JSON schema,
+deduplication, and factuality rules.
+
+Instruction files are read as UTF-8. Inline and file instructions are combined
+with a blank line between them, then capped at 16,000 characters. Empty
+instruction files and unreadable instruction files are ignored. Dry-run
+diagnostics report whether prompt customization was requested, resolved, and
+actually applied. Customization only affects provider full generation; with
+`--no-ai`, missing provider keys, or provider generation fallback, the
+deterministic release-note/fallback output is produced without applying the
+custom instructions.
+
+### Use a config file
+
+Create `changelog-bot.config.json` in the directory where you run the CLI:
+
+```json
+{
+  "provider": "gemini",
+  "language": "nl",
+  "instructionsFile": ".github/changelog-instructions.md"
+}
+```
+
+Then run normally:
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot --release-tag HEAD --release-name 1.0.0
+```
+
+CLI flags override config file values. To use a different file:
+
+```sh
+pnpm dlx @nyaomaru/changelog-bot --config .github/changelog-bot.json --dry-run
+```
+
+Config files use camelCase keys matching the CLI options:
+`repoPath`, `changelogPath`, `baseBranch`, `provider`, `releaseTag`,
+`releaseName`, `releaseBody`, `language`, `instructions`,
+`instructionsFile`, `dryRun`, `dryRunJsonReport`, `failOnLlmError`,
+`requireProvider`, `noAi`, `why`, `whyEngine`, `whyMaxPrs`, `whyMaxCharsPerPr`,
+`whyConfidence`, and `whyLabel`. Unknown keys are rejected so typos fail fast.
+
+#### Editor autocompletion with JSON Schema
+
+A JSON Schema for the config file is published with the package. Add a
+`$schema` key to get autocompletion, hover docs, and validation in VS Code,
+WebStorm, Cursor, and other JSON-aware editors:
+
+```json
+{
+  "$schema": "./node_modules/@nyaomaru/changelog-bot/public/config.schema.json",
+  "provider": "anthropic"
+}
+```
+
+You can also point at the copy on GitHub:
+`https://raw.githubusercontent.com/necoz-oss/changelog-bot/main/public/config.schema.json`.
+The `$schema` key is accepted and ignored by the CLI. Contributors can
+regenerate the schema after changing the config shape with
+`pnpm generate:schema`.
+
+### From source (local checkout)
+
+Working in a clone? Follow the steps in [Local development setup](#local-development-setup) to install dependencies and run the CLI directly.
+
+## Configuration
+
+Bring your own keys and tokens as needed—`changelog-bot` only asks for what it truly uses.
+
+- Environment variables:
+  - `GITHUB_TOKEN` (required for PR creation; not required for `--dry-run`)
+  - Or GitHub App auth (recommended for branding and least-privilege):
+    - `CHANGELOG_BOT_APP_ID` and `CHANGELOG_BOT_APP_PRIVATE_KEY` (required)
+    - `CHANGELOG_BOT_APP_INSTALLATION_ID` (optional; auto-detected per repo)
+    - `CHANGELOG_BOT_API_BASE` (optional; GHES, e.g., `https://ghe.example.com/api/v3`)
+  - `OPENAI_API_KEY` (optional)
+  - `ANTHROPIC_API_KEY` (optional)
+  - `GEMINI_API_KEY` (optional)
+  - `TYPESAFE_API_KEY` (optional; required only with `--why-engine jev`)
+  - `REPO_FULL_NAME` (optional, `owner/repo`; used for link resolution)
+  - `OPENAI_MODEL` (optional; defaults to `gpt-4o-mini`)
+  - `ANTHROPIC_MODEL` (optional; defaults to `claude-3-5-sonnet-20240620`)
+  - `GEMINI_MODEL` (optional; defaults to `gemini-3.5-flash`)
+  - `TYPESAFE_MODEL` (optional; defaults to `jev-latest`)
+
+### Fallback behavior (when AI is unavailable)
+
+By default, changelog-bot prefers a completed changelog over a hard failure. Use
+the strict flags below when CI should fail instead of producing deterministic
+fallback output.
+
+| Condition                                | Default behavior                                                                                                                                                               | Strict behavior                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `--no-ai` is set                         | Skip provider generation, title classification, and WHY extraction. Use GitHub Release Notes or heuristic output.                                                              | Cannot be combined with `--require-provider`.                                 |
+| Selected provider key is missing         | Continue with GitHub Release Notes or heuristic output.                                                                                                                        | `--require-provider` fails before generation.                                 |
+| Provider generation fails                | Retry once with truncated inputs, then continue with heuristic output.                                                                                                         | `--fail-on-llm-error` fails the run.                                          |
+| Release Notes title classification fails | Use deterministic category fallback.                                                                                                                                           | `--fail-on-llm-error` fails the run.                                          |
+| WHY extraction provider call fails       | Continue without WHY notes and report the reason.                                                                                                                              | `--fail-on-llm-error` fails the run.                                          |
+| GitHub metadata enrichment fails         | Continue with available local git data.                                                                                                                                        | No v1 strict flag; provide GitHub auth and `fetch-depth: 0` for best results. |
+| GitHub Release Notes are available       | Use them as the source of truth. If language or custom instructions require provider generation and a provider key exists, full generation may use the release notes as input. | `--fail-on-llm-error` only affects provider/API/schema failures.              |
+| Prompt customization cannot be applied   | Continue and report `applied=false` with the reason in dry-run diagnostics.                                                                                                    | No failure mode in v1.                                                        |
+
+When AI is not used for changelog generation, the PR body is annotated with
+“Generated without LLM. Reason: …”. Title classification uses the provider when
+available; without keys, titles fall back to deterministic local categories.
+
+### Exit codes
+
+Codes `64` and `65` follow the common POSIX `sysexits` convention
+(`EX_USAGE`, `EX_DATAERR`). Codes `66` and `67` stay in the same reserved range
+for changelog-bot-specific provider and schema failures. Code `1` is kept for
+unexpected errors that are not yet classified.
+
+| Code | Meaning                   | Typical cause                                                             |
+| ---- | ------------------------- | ------------------------------------------------------------------------- |
+| `0`  | Success                   | Changelog was generated, or dry-run completed.                            |
+| `1`  | Unexpected error          | Unclassified runtime failure.                                             |
+| `64` | Usage/configuration error | Invalid CLI/config values, missing repo identity, or missing GitHub auth. |
+| `65` | Repository/data error     | Invalid repository state or Git data needed for changelog generation.     |
+| `66` | Provider failure          | LLM generation/classification/WHY extraction failed in strict mode.       |
+| `67` | Output validation failure | Provider output did not match the expected schema after retry.            |
+
+The CLI prints the actionable error message to stderr before exiting. Use
+`--dry-run` to preview without requiring GitHub write authentication, or provide
+`GITHUB_TOKEN` / GitHub App credentials before creating a PR.
+
+## GitHub Actions integration
+
+The published composite action installs the CLI with `pnpm dlx` and forwards
+action inputs to CLI flags. The caller must check out the repository first,
+preferably with `fetch-depth: 0` so tag and history lookups work. Pin `uses:` to
+a tag or commit for repeatable CI.
+
+### Repository move
+
+GitHub Actions does not follow repository redirects for actions or reusable
+workflows. A web or git redirect from `nyaomaru/changelog-bot` does not make an
+old `uses:` line work. The npm package remains `@nyaomaru/changelog-bot`.
+
+After this change is merged:
+
+1. Point composite Actions at `necoz-oss/changelog-bot@v0`, or at a specific tag such as `necoz-oss/changelog-bot@v0.11.0`. Those existing tags install `@nyaomaru/changelog-bot` and do not name the old owner in `action.yml`.
+2. Point reusable workflows at `necoz-oss/changelog-bot/.github/workflows/changelog.yaml@main`. On `main`, that workflow calls `necoz-oss/changelog-bot@v0`.
+3. Do not pin the reusable workflow to the current `v0` tag or to `v0.11.0`. Those tags still contain `uses: nyaomaru/changelog-bot@v0`, and Actions will not redirect it. Merging does not rewrite existing tags.
+4. The next published `v0.x.x` release moves the floating `v0` tag to that release commit. `v1.x.x` releases leave `v0` where it is. Until that `v0.x.x` release exists, keep reusable-workflow callers on `@main`.
+
+### Release published workflow
+
+```yaml
+name: Update Changelog
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      # issues: write # optional, applies labels
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: necoz-oss/changelog-bot@v0
+        with:
+          changelog-path: CHANGELOG.md
+          base-branch: main
+          provider: openai
+          release-tag: ${{ github.event.release.tag_name }}
+          release-name: ${{ github.event.release.tag_name }}
+          release-body: ${{ github.event.release.body }}
+          # npm-version: 0.5.x
+          # minimum-package-age-days: '2'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+`published` is the safest default for GitHub UI release flows because it also
+runs when a draft release is published. Use `types: [created]` only when your
+process creates non-draft releases directly and you want the changelog PR opened
+before publication.
+
+### Manual dispatch workflow
+
+```yaml
+name: Update Changelog Manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Git ref or tag to generate from
+        required: true
+        default: HEAD
+      release_name:
+        description: Version label without the v prefix
+        required: true
+      dry_run:
+        description: Print output without writing or opening a PR
+        required: true
+        default: 'true'
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      # issues: write # optional, applies labels
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: necoz-oss/changelog-bot@v0
+        with:
+          changelog-path: CHANGELOG.md
+          base-branch: main
+          provider: openai
+          release-tag: ${{ inputs.release_tag }}
+          release-name: ${{ inputs.release_name }}
+          dry-run: ${{ inputs.dry_run }}
+          dry-run-json-report: 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Dry-run only workflow
+
+```yaml
+name: Preview Changelog
+
+on:
+  workflow_dispatch:
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: necoz-oss/changelog-bot@v0
+        with:
+          release-tag: HEAD
+          release-name: 0.5.0-preview
+          dry-run: 'true'
+          dry-run-json-report: 'true'
+          no-ai: 'true'
+```
+
+Dry-runs do not write `CHANGELOG.md`, push a branch, or create a PR. They do
+not need `GITHUB_TOKEN` for public repositories. Private repositories and
+authenticated GitHub API lookups still require GitHub credentials. Set a token
+for reliable WHY extraction because anonymous GitHub API quotas are limited.
+
+### Reusable workflow
+
+Use the reusable workflow when several repositories should share the same
+changelog job. The calling job still declares the token permissions it wants to
+hand over.
+
+```yaml
+jobs:
+  changelog:
+    uses: necoz-oss/changelog-bot/.github/workflows/changelog.yaml@main
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      changelog_path: CHANGELOG.md
+      # config_path: .github/changelog-bot.json
+      base_branch: main
+      provider: openai
+      release_tag: ${{ github.event.release.tag_name }}
+      release_name: ${{ github.event.release.tag_name }}
+      # release_body: '...'
+      # language: ja
+      # instructions_file: .github/changelog-instructions.md
+      # npm_version: 0.5.x
+      # minimum_package_age_days: '2'
+      # dry_run: 'true'
+      # dry_run_json_report: 'true'
+      # fail_on_llm_error: 'true'
+      # require_provider: 'true'
+      # no_ai: 'true'
+      # why: 'true'
+      # why_engine: jev
+      # why_label: Reason
+    secrets:
+      REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+```
+
+### Public contract: CLI, Action, reusable workflow, and config
+
+Boolean action and reusable workflow inputs are strings: use `'true'` or
+`'false'`. Omitted CLI-backed inputs keep CLI/config-file defaults. Explicit
+action values are forwarded as CLI flags and override config-file values. During
+the v1.x series, option/input/config names, value types, defaults, and
+precedence are treated as the public compatibility contract.
+
+| Purpose                 | CLI flag                                             | Action input               | Reusable workflow input    | Config key / default                                        |
+| ----------------------- | ---------------------------------------------------- | -------------------------- | -------------------------- | ----------------------------------------------------------- |
+| Config file             | `--config`                                           | `config-path`              | `config_path`              | auto-loads `changelog-bot.config.json` when present         |
+| Repository path         | `--repo-path`                                        | none                       | none                       | `repoPath`, default `.`; actions run from the checkout root |
+| Changelog path          | `--changelog-path`                                   | `changelog-path`           | `changelog_path`           | `changelogPath`, default `CHANGELOG.md`                     |
+| PR base branch          | `--base-branch`                                      | `base-branch`              | `base_branch`              | `baseBranch`, default `main`                                |
+| Provider                | `--provider`                                         | `provider`                 | `provider`                 | `provider`, default `openai`                                |
+| Release ref             | `--release-tag`                                      | `release-tag`              | `release_tag`              | `releaseTag`, default latest tag or `HEAD`                  |
+| Version label           | `--release-name`                                     | `release-name`             | `release_name`             | `releaseName`, derived from release ref                     |
+| Release notes body      | `--release-body`                                     | `release-body`             | `release_body`             | `releaseBody`, default empty                                |
+| Output language         | `--language`                                         | `language`                 | `language`                 | `language`, default `en`                                    |
+| Extra instructions      | `--instructions`                                     | `instructions`             | `instructions`             | `instructions`, unset                                       |
+| Instructions file       | `--instructions-file`                                | `instructions-file`        | `instructions_file`        | `instructionsFile`, unset                                   |
+| Preview only            | `--dry-run` / `--no-dry-run`                         | `dry-run`                  | `dry_run`                  | `dryRun`, default `false`                                   |
+| JSON dry-run report     | `--dry-run-json-report` / `--no-dry-run-json-report` | `dry-run-json-report`      | `dry_run_json_report`      | `dryRunJsonReport`, default `false`                         |
+| Fail on provider errors | `--fail-on-llm-error` / `--no-fail-on-llm-error`     | `fail-on-llm-error`        | `fail_on_llm_error`        | `failOnLlmError`, default `false`                           |
+| Require provider key    | `--require-provider` / `--no-require-provider`       | `require-provider`         | `require_provider`         | `requireProvider`, default `false`                          |
+| Deterministic mode      | `--no-ai` / `--ai`                                   | `no-ai`                    | `no_ai`                    | `noAi`, default `false`                                     |
+| WHY extraction          | `--why` / `--no-why`                                 | `why`                      | `why`                      | `why`, default `false`                                      |
+| WHY engine              | `--why-engine`                                       | `why-engine`               | `why_engine`               | `whyEngine`, default `llm`; experimental `jev`              |
+| WHY PR limit            | `--why-max-prs`                                      | `why-max-prs`              | `why_max_prs`              | `whyMaxPrs`, default `30`                                   |
+| WHY chars per PR        | `--why-max-chars-per-pr`                             | `why-max-chars-per-pr`     | `why_max_chars_per_pr`     | `whyMaxCharsPerPr`, default `800`                           |
+| WHY confidence          | `--why-confidence`                                   | `why-confidence`           | `why_confidence`           | `whyConfidence`, default `medium`                           |
+| WHY label               | `--why-label`                                        | `why-label`                | `why_label`                | `whyLabel`, default `Why`                                   |
+| CLI package version     | none                                                 | `npm-version`              | `npm_version`              | Action-only, default `latest`                               |
+| Package age guard       | none                                                 | `minimum-package-age-days` | `minimum_package_age_days` | Action-only, default `0`                                    |
+
+Outputs: None.
+
+### Package install guard
+
+The action installs `@nyaomaru/changelog-bot` with `pnpm dlx`. By default,
+`minimum-package-age-days` is `0`, which disables pnpm's `minimumReleaseAge`
+guard. Most projects can leave that alone; set it to a positive integer, such as
+`'2'`, when you want CI to wait before installing a newly published package
+version. The action forwards the value through pnpm's runtime config flag,
+`--config.minimum-release-age=...`.
+
+If you run the CLI directly with `npx`, this action-level guard does not apply.
+Use `pnpm dlx` with `minimumReleaseAge`, or pin an exact version yourself if you
+want the same protection.
+
+### Authentication and permissions
+
+For non-dry-run PR creation, give changelog-bot a token that can push a branch
+and open a PR. The default `GITHUB_TOKEN` works well for most repositories; a
+PAT or GitHub App is useful when you want a branded bot identity or extra scope
+control. If both `GITHUB_TOKEN` and App credentials are present, `GITHUB_TOKEN`
+wins.
+
+Minimum workflow permissions:
+
+- `contents: write` to commit and push the changelog branch.
+- `pull-requests: write` to open the PR.
+- `issues: write` is optional for labels. Without it, the PR is still created and changelog-bot prints a warning.
+
+Reusable workflow note: the shared workflow keeps its internal `GITHUB_TOKEN`
+scope to `contents` and `pull-requests`. If labels are important there, pass a
+PAT or GitHub App token with Issues write access as `REPO_TOKEN`.
+
+Fine-grained PATs and GitHub Apps need repository Contents and Pull requests
+read/write access. Add Issues read/write only when labels should be applied.
+Metadata read is included by GitHub Apps.
+
+Set `REPO_FULL_NAME` manually only when running the CLI directly outside GitHub
+Actions. The composite action sets it from `github.repository`.
+
+### GitHub App authentication
+
+Use a GitHub App when PRs should be authored by the App account and scoped to
+least privilege. Keep `GITHUB_TOKEN` off the same step if you want the App path
+to be used.
+
+```yaml
+name: Update Changelog (App Auth)
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push branch
+      pull-requests: write # to open PR
+      # issues: write # optional, applies labels
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: necoz-oss/changelog-bot@v0
+        with:
+          changelog-path: CHANGELOG.md
+          base-branch: main
+          provider: openai
+          release-tag: ${{ github.event.release.tag_name }}
+          release-name: ${{ github.event.release.tag_name }}
+        env:
+          CHANGELOG_BOT_APP_ID: ${{ secrets.CHANGELOG_BOT_APP_ID }}
+          CHANGELOG_BOT_APP_PRIVATE_KEY: ${{ secrets.CHANGELOG_BOT_APP_PRIVATE_KEY }}
+          # CHANGELOG_BOT_APP_INSTALLATION_ID: ${{ secrets.CHANGELOG_BOT_APP_INSTALLATION_ID }}
+          # CHANGELOG_BOT_API_BASE: https://ghe.example.com/api/v3
+          # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+For the reusable workflow, pass the same App secrets instead of `REPO_TOKEN`:
+
+```yaml
+secrets:
+  CHANGELOG_BOT_APP_ID: ${{ secrets.CHANGELOG_BOT_APP_ID }}
+  CHANGELOG_BOT_APP_PRIVATE_KEY: ${{ secrets.CHANGELOG_BOT_APP_PRIVATE_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+Notes
+
+- Paste the App private key into a repository/organization secret as a multiline PEM; secrets preserve newlines.
+- Single-line secrets with escaped `\n` are also accepted.
+- `CHANGELOG_BOT_APP_INSTALLATION_ID` is optional; changelog-bot auto-detects it from the repository.
+- `CHANGELOG_BOT_API_BASE` can point to a GHES REST API base, such as `https://ghe.example.com/api/v3`.
+- Installation tokens are minted per run and expire in about 1 hour, so there is no long-lived token to rotate.
+
+## Troubleshooting
+
+- `Resource not accessible by integration`: add `contents: write` and `pull-requests: write` to the job. For reusable workflows, add them on the calling job.
+- Label warning: the PR was created, but labels were skipped. Add `issues: write` for direct Action/CLI runs, or pass a PAT/GitHub App token with Issues write access to the reusable workflow.
+- `GitHub authentication is required to create PR`: non-dry-run mode needs `GITHUB_TOKEN`, a PAT, or GitHub App credentials. Dry-run mode does not create a PR.
+- GitHub App JWT or private key errors: use `CHANGELOG_BOT_APP_ID` and `CHANGELOG_BOT_APP_PRIVATE_KEY`, keep the PEM unencrypted, and preserve newlines or use escaped `\n`.
+- Missing release notes or PR titles: use `actions/checkout` with `fetch-depth: 0`, pass `release-body`, and provide GitHub auth for private repositories.
+- AI key missing: the CLI falls back by default. Set the matching provider key, use `require-provider: 'true'` to fail instead, or use `no-ai: 'true'` intentionally.
+- Provider API/schema failure: keep fallback behavior, or set `fail-on-llm-error: 'true'` when a deterministic failure is better than heuristic output.
+- WHY notes are missing: expected when `why` is not enabled, `no-ai` is enabled, no provider key is available, a private PR cannot be read without GitHub credentials, the PR is automatic maintenance, or the PR description does not clearly state a trusted reason.
+- Package version is unexpectedly blocked: check `minimum-package-age-days`. The default is `0`; positive values enable the pnpm package age guard.
+- No PR appears in dry-run: expected. Dry-run prints the proposed changelog and diagnostics only.
+- Duplicate version heading: the changelog already contains that release. Use a different `release-name` or edit the existing section intentionally.
+- Push or PR targets the wrong branch: set `base-branch` / `base_branch` to the branch that should receive the changelog PR.
+
+## Local development setup
+
+If you're contributing to `changelog-bot`, the repo ships a `mise.toml` to pin tool versions and expose handy tasks.
+
+### Mise (toolchain & tasks)
+
+- Tools: Node `24.22.1`; pnpm `11.22.0` is pinned through Corepack and `packageManager`.
+- Tasks: `lint`, `build`, `test`, `test_unit`, `test_performance`, `qa`.
+
+Builds use the TypeScript 7 native compiler. TypeScript 6 remains installed
+through the official compatibility package for tools that still require the
+compiler API, including `typescript-eslint`, `ts-jest`, and `ts-node`.
+
+```sh
+# Install tool versions declared in mise.toml
+mise install
+# Install dependencies
+mise dev_install
+
+# Run common tasks
+mise build         # same as: pnpm build
+mise lint          # same as: pnpm lint
+mise test          # same as: pnpm test
+mise qa            # runs lint, test, build in sequence
+```
+
+### Manual setup
+
+```sh
+pnpm install
+pnpm run build
+
+# Configure environment variables (OpenAI / Anthropic API keys, GitHub token, etc.)
+# by copying `.env.example` to `.env` and filling the required values.
+cp .env.example .env
+
+# Optional: run via npx after publishing
+npx @nyaomaru/changelog-bot --help
+```
+
+## Notes & FAQ
+
+- ❓ _Do I need AI keys?_ → No. The CLI gracefully falls back to heuristic mode.
+- 🔑 _Is GITHUB_TOKEN required?_ → Only when creating PRs (non-dry-run).
+- 🧩 _What if my tag already exists?_ → Duplicate version headings are automatically detected and skipped.
+- 🔗 _Compare links?_ → Automatically ensured and updated for every release.
+
+**Compatibility Policy**
+
+- During `v0`, breaking changes may occur as we stabilize flags and output. We avoid breaks when possible and document changes in the changelog.
+- The CLI supports only patched Node.js release lines: `^22.23.4`,
+  `^24.22.1`, and `^26.12.1`. Node.js 20 and earlier are unsupported. The
+  bundled composite action installs Node.js `24.22.1` before running the CLI.
+- To pin versions:
+  - Action: use a major tag (`uses: necoz-oss/changelog-bot@v0`) or a specific ref (e.g., `@v0.1.2`).
+  - Action + CLI pin: set `npm-version` input (e.g., `npm-version: 0.1.2`). Set `minimum-package-age-days` to a positive value when you want pnpm to block newly published package versions.
+  - npx: `npx @nyaomaru/changelog-bot@0.1.2 ...`.
+- From `v1` onward, we follow SemVer: no breaking changes without a major version bump.
+
+<p align="center">
+    <img src="https://raw.githubusercontent.com/necoz-oss/changelog-bot/main/public/ChangelogBot_text.png" width="600px" align="center" alt="changelog-bot text" />
+</p>
 
 ## Privacy
 

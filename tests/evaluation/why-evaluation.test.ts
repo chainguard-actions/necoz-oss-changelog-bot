@@ -1,0 +1,374 @@
+import { runInNewContext } from 'node:vm';
+import { jest, describe, expect, test } from '@jest/globals';
+
+import { WHY_EVALUATION_CORPUS } from '@/evaluation/why-corpus.js';
+import {
+  evaluateJevConfidence,
+  evaluateWhySelections,
+} from '@/evaluation/why-evaluation.js';
+import type { WhyEvaluationCase } from '@/evaluation/why-evaluation.js';
+import { evaluateEngineWithRepeatedRuns } from '@/evaluation/run-why-evaluation.js';
+import type { WhyExtractor } from '@/types/why-extractor.js';
+
+const CASES: WhyEvaluationCase[] = [
+  {
+    id: 'positive',
+    item: {
+      prNumber: 1,
+      title: 'Fix lookup',
+      itemText: 'Fix lookup',
+      sectionTitle: 'Fixed',
+      trustScore: 9,
+      trustBucket: 'high',
+      requiresHighConfidence: false,
+      candidates: [
+        'The lookup must use the merged pull request to avoid stale data.',
+      ],
+    },
+    expectedSelectedCandidateIndex: 0,
+  },
+  {
+    id: 'negative',
+    item: {
+      prNumber: 2,
+      title: 'Refactor lookup',
+      itemText: 'Refactor lookup',
+      sectionTitle: 'Changed',
+      trustScore: 7,
+      trustBucket: 'medium',
+      requiresHighConfidence: false,
+      candidates: ['Move lookup code into a shared module.'],
+    },
+    expectedSelectedCandidateIndex: null,
+  },
+];
+
+describe('evaluateWhySelections', () => {
+  test('keeps every corpus label tied to one valid candidate', () => {
+    const prNumbers = new Set<number>();
+    for (const evaluationCase of WHY_EVALUATION_CORPUS) {
+      expect(prNumbers.has(evaluationCase.item.prNumber)).toBe(false);
+      prNumbers.add(evaluationCase.item.prNumber);
+      if (evaluationCase.expectedSelectedCandidateIndex !== null) {
+        expect(
+          evaluationCase.item.candidates[
+            evaluationCase.expectedSelectedCandidateIndex
+          ],
+        ).toBeDefined();
+      }
+      for (const candidateIndex of evaluationCase.acceptableCandidateIndexes ??
+        []) {
+        expect(evaluationCase.item.candidates[candidateIndex]).toBeDefined();
+      }
+    }
+  });
+
+  test('reports acceptance and exact candidate-preservation metrics', () => {
+    const metrics = evaluateWhySelections(CASES, [
+      {
+        prNumber: 1,
+        why: 'The lookup must use the merged pull request to avoid stale data.',
+        confidence: 'high',
+      },
+      {
+        prNumber: 2,
+        why: 'Move lookup code into a shared module.',
+        confidence: 'medium',
+      },
+      { prNumber: 3, why: 'Unexpected', confidence: 'low' },
+    ]);
+
+    expect(metrics).toEqual({
+      caseCount: 2,
+      expectedSelections: 1,
+      predictedSelections: 3,
+      truePositives: 1,
+      falsePositives: 2,
+      falseNegatives: 0,
+      precision: 1 / 3,
+      recall: 1,
+      f1: 0.5,
+      exactCandidatePreservations: 1,
+      exactCandidatePreservationRate: 1,
+      unexpectedSelections: 1,
+      duplicateSelections: 0,
+      outcomes: [
+        {
+          id: 'positive',
+          prNumber: 1,
+          expectedSelectedCandidateIndex: 0,
+          selected: true,
+          selectedCandidateIndex: 0,
+          preservesExpectedCandidate: true,
+        },
+        {
+          id: 'negative',
+          prNumber: 2,
+          expectedSelectedCandidateIndex: null,
+          selected: true,
+          selectedCandidateIndex: 0,
+          preservesExpectedCandidate: false,
+        },
+      ],
+    });
+  });
+
+  test('counts duplicate output for a corpus PR as a false positive', () => {
+    const metrics = evaluateWhySelections(CASES, [
+      {
+        prNumber: 1,
+        why: 'The lookup must use the merged pull request to avoid stale data.',
+        confidence: 'high',
+      },
+      { prNumber: 1, why: 'Duplicate output', confidence: 'low' },
+    ]);
+
+    expect(metrics).toEqual(
+      expect.objectContaining({
+        predictedSelections: 2,
+        truePositives: 1,
+        falsePositives: 1,
+        duplicateSelections: 1,
+        precision: 0.5,
+      }),
+    );
+  });
+
+  test('reports Jev probability calibration proxies and threshold trade-offs', () => {
+    const metrics = evaluateJevConfidence(CASES, [
+      {
+        prNumber: 1,
+        questionType: 'noul',
+        selectedOption: 'candidate_0',
+        selectedCandidateIndex: 0,
+        selectionProbability: 0.9,
+        mappedConfidence: 'high',
+        candidateProbabilities: [
+          { candidateIndex: 0, probability: 0.9, relevanceProbability: 0.9 },
+        ],
+      },
+      {
+        prNumber: 2,
+        questionType: 'noul',
+        selectedOption: 'candidate_0',
+        selectedCandidateIndex: 0,
+        selectionProbability: 0.7,
+        mappedConfidence: 'medium',
+        candidateProbabilities: [
+          { candidateIndex: 0, probability: 0.7, relevanceProbability: 0.7 },
+        ],
+      },
+    ]);
+
+    expect(metrics.brierScore).toBeCloseTo(0.25);
+    expect({ ...metrics, brierScore: 0.25 }).toEqual({
+      candidateCount: 2,
+      brierScore: 0.25,
+      meanPositiveProbability: 0.9,
+      meanNegativeProbability: 0.7,
+      thresholds: [
+        {
+          threshold: 0.5,
+          truePositives: 1,
+          falsePositives: 1,
+          falseNegatives: 0,
+          precision: 0.5,
+          recall: 1,
+          f1: 2 / 3,
+        },
+        {
+          threshold: 0.6,
+          truePositives: 1,
+          falsePositives: 1,
+          falseNegatives: 0,
+          precision: 0.5,
+          recall: 1,
+          f1: 2 / 3,
+        },
+        {
+          threshold: 0.8,
+          truePositives: 1,
+          falsePositives: 0,
+          falseNegatives: 0,
+          precision: 1,
+          recall: 1,
+          f1: 1,
+        },
+      ],
+    });
+  });
+
+  test('counts an invalid highest-probability candidate as both an incorrect selection and a miss', () => {
+    const metrics = evaluateJevConfidence(
+      [
+        {
+          id: 'wrong-candidate',
+          item: {
+            ...CASES[0]?.item,
+            candidates: [
+              'The lookup must use the merged pull request to avoid stale data.',
+              'This explicit reason applies to another change.',
+            ],
+          },
+          expectedSelectedCandidateIndex: 0,
+        },
+      ],
+      [
+        {
+          prNumber: 1,
+          questionType: 'noul',
+          selectedOption: 'candidate_1',
+          selectedCandidateIndex: 1,
+          selectionProbability: 0.9,
+          mappedConfidence: 'high',
+          candidateProbabilities: [
+            {
+              candidateIndex: 0,
+              probability: 0.65,
+              relevanceProbability: 0.65,
+            },
+            { candidateIndex: 1, probability: 0.9, relevanceProbability: 0.9 },
+          ],
+        },
+      ],
+    );
+
+    expect(metrics.thresholds[0]).toEqual({
+      threshold: 0.5,
+      truePositives: 0,
+      falsePositives: 1,
+      falseNegatives: 1,
+      precision: 0,
+      recall: 0,
+      f1: null,
+    });
+  });
+
+  test('treats the primary and additional acceptable candidate indexes as labels', () => {
+    const multiCandidateCase: WhyEvaluationCase = {
+      id: 'multiple-valid-candidates',
+      item: {
+        ...CASES[0]?.item,
+        candidates: [
+          'The lookup must use the merged pull request to avoid stale data.',
+          'The release reference prevents stale lookup data.',
+        ],
+      },
+      expectedSelectedCandidateIndex: 0,
+      acceptableCandidateIndexes: [1],
+    };
+    const metrics = evaluateJevConfidence(
+      [multiCandidateCase],
+      [
+        {
+          prNumber: 1,
+          questionType: 'noul',
+          selectedOption: 'candidate_1',
+          selectedCandidateIndex: 1,
+          selectionProbability: 0.9,
+          mappedConfidence: 'high',
+          candidateProbabilities: [
+            { candidateIndex: 0, probability: 0.4, relevanceProbability: 0.4 },
+            { candidateIndex: 1, probability: 0.9, relevanceProbability: 0.9 },
+          ],
+        },
+      ],
+    );
+
+    expect(metrics.brierScore).toBeCloseTo(0.185);
+    expect(metrics.meanPositiveProbability).toBeCloseTo(0.65);
+    expect(metrics.thresholds[0]).toEqual(
+      expect.objectContaining({ truePositives: 1, falsePositives: 0 }),
+    );
+  });
+});
+
+describe('evaluateEngineWithRepeatedRuns', () => {
+  test.each([
+    [new Error('native failure'), 'native failure'],
+    [runInNewContext('new Error("realm failure")'), 'realm failure'],
+    ['string failure', 'string failure'],
+    [null, 'null'],
+    [undefined, 'undefined'],
+    [{ message: 'plain object' }, '[object Object]'],
+  ])('records a failed run for thrown %p', async (error, expectedMessage) => {
+    const extractor: WhyExtractor = {
+      name: 'test-extractor',
+      async extractWhyNotes() {
+        throw error;
+      },
+    };
+
+    const report = await evaluateEngineWithRepeatedRuns(
+      'test-engine',
+      'test-model',
+      true,
+      extractor,
+      { language: 'en', whyLabel: 'Why', items: [] },
+      0,
+      1,
+    );
+
+    expect(report).toMatchObject({
+      status: 'failed',
+      failureCount: 1,
+      successCount: 0,
+      error: expectedMessage,
+      runs: [{ status: 'failed', error: expectedMessage }],
+    });
+  });
+
+  test('skips evaluation when hasApiKey is false', async () => {
+    const mockExtractor: WhyExtractor = {
+      name: 'test-extractor',
+      extractWhyNotes: jest.fn<WhyExtractor['extractWhyNotes']>(),
+    };
+    const report = await evaluateEngineWithRepeatedRuns(
+      'test-engine',
+      'test-model',
+      false,
+      mockExtractor,
+      { language: 'en', whyLabel: 'Why', items: [] },
+      100,
+      3,
+    );
+    expect(report.status).toBe('skipped');
+    expect(report.runsCount).toBe(0);
+    expect(report.error).toBe('API key is not configured');
+    expect(mockExtractor.extractWhyNotes).not.toHaveBeenCalled();
+  });
+
+  test('runs multiple iterations and records aggregated latency and model metadata', async () => {
+    const mockExtractor: WhyExtractor = {
+      name: 'test-extractor',
+      lastServedModel: 'test-model-served',
+      lastWhyExtractionUsage: { inputTokens: 10, outputTokens: 5 },
+      lastWhyExtractionDiagnostics: { retries: 0, throttled: false },
+      extractWhyNotes: jest
+        .fn<WhyExtractor['extractWhyNotes']>()
+        .mockResolvedValue({
+          items: [],
+        }),
+    };
+    const report = await evaluateEngineWithRepeatedRuns(
+      'test-engine',
+      'test-model-requested',
+      true,
+      mockExtractor,
+      { language: 'en', whyLabel: 'Why', items: [] },
+      100,
+      2,
+    );
+    expect(report.status).toBe('completed');
+    expect(report.runsCount).toBe(2);
+    expect(report.successCount).toBe(2);
+    expect(report.failureCount).toBe(0);
+    expect(report.runs).toHaveLength(2);
+    expect(report.runs?.[0]?.status).toBe('completed');
+    expect(report.runs?.[0]?.servedModel).toBe('test-model-served');
+    expect(report.requestedModel).toBe('test-model-requested');
+    expect(report.servedModel).toBe('test-model-served');
+    expect(report.latency).toBeDefined();
+    expect(mockExtractor.extractWhyNotes).toHaveBeenCalledTimes(2);
+  });
+});

@@ -1,0 +1,151 @@
+import { fetchPRInfo } from '../lib/github.js';
+import { buildCommitReleaseChanges, buildIdentifiedReleaseItems, buildReleaseItemsFromPullRequests, deduplicateReleaseChangesByPullRequest, expandReleaseChangesWithSubChanges, parseReleaseNotes, buildSectionFromRelease, } from './release.js';
+import { applyDeterministicClassification } from './deterministic-classification.js';
+import { buildChangesForClassification } from './classify-pre.js';
+import { fallbackCategoryAssignments, IncompleteClassificationError, } from '../providers/classification.js';
+import { LlmError } from '../lib/errors.js';
+import { DEFAULT_PR_LABELS, PR_TITLE_PREFIX, UNRELEASED_ANCHOR, } from '../constants/changelog.js';
+import { appendFallbackNote, buildAutoPrBody, buildPrUrl, resolvePrFromTitles, } from './llm-output-common.js';
+import { isError } from './is.js';
+import { validateReleaseResult } from './release-validation.js';
+/**
+ * Fill missing PR numbers/URLs/authors for release note items when possible.
+ * WHY: Release notes omit metadata; we backfill via title mapping and GitHub API.
+ */
+async function enrichReleaseItems(params) {
+    const { owner, repo, token, githubApiBase, titleToPr, items } = params;
+    for (const item of items) {
+        if (!item.pr) {
+            const num = resolvePrFromTitles(titleToPr, [item.title, item.rawTitle]);
+            if (num) {
+                item.pr = num;
+                item.url = buildPrUrl(owner, repo, num);
+            }
+        }
+        if (item.pr) {
+            if (!item.url) {
+                item.url = buildPrUrl(owner, repo, item.pr);
+            }
+            if (!item.author) {
+                try {
+                    const lookup = await fetchPRInfo(owner, repo, item.pr, token, githubApiBase);
+                    if (lookup.status === 'success') {
+                        if (lookup.data.author)
+                            item.author = lookup.data.author;
+                        if (lookup.data.url)
+                            item.url = lookup.data.url;
+                    }
+                }
+                catch {
+                    console.warn(`Warning: Failed to fetch PR #${item.pr} info`);
+                }
+            }
+        }
+    }
+}
+export async function buildOutputFromReleaseNotes(params, fallbackReasons) {
+    const { owner, repo, version, date, prevRef, releaseRef, releaseBody, titleToPr, provider, hasProviderKey, noAi, failOnLlmError, token, githubApiBase, } = params;
+    const parsedRelease = parseReleaseNotes(releaseBody, { owner, repo });
+    const excludedChanges = [];
+    let sourceChanges = [];
+    let releaseChanges = [];
+    if (parsedRelease.items.length) {
+        const identified = buildIdentifiedReleaseItems(parsedRelease.items);
+        sourceChanges = [...identified];
+        releaseChanges = deduplicateReleaseChangesByPullRequest(identified, excludedChanges);
+    }
+    let usedPullRequestMetadata = false;
+    if (!releaseChanges.length && !parsedRelease.sections?.length) {
+        sourceChanges = buildCommitReleaseChanges(params.commitList);
+        releaseChanges = buildReleaseItemsFromPullRequests(params.commitList, params.pullRequestsBySha ?? {}, excludedChanges);
+        usedPullRequestMetadata = releaseChanges.length > 0;
+    }
+    const hasAdditionalSections = Boolean(parsedRelease.sections?.length);
+    if (!releaseChanges.length && !hasAdditionalSections)
+        return null;
+    fallbackReasons.push(usedPullRequestMetadata
+        ? 'Used GitHub pull request metadata as the source (no generation model call)'
+        : 'Used GitHub Release Notes as the source (no model call)');
+    let aiUsed = false;
+    await enrichReleaseItems({
+        owner,
+        repo,
+        token,
+        githubApiBase,
+        titleToPr,
+        items: releaseChanges,
+    });
+    releaseChanges = deduplicateReleaseChangesByPullRequest(releaseChanges, excludedChanges);
+    // WHY: Sub-changes must be expanded after resolving PR numbers via titleToPr
+    // and deduping at the PR level, so that any separate release-note items mapped
+    // to the same PR are deduplicated first rather than lingering alongside sub-changes.
+    releaseChanges = expandReleaseChangesWithSubChanges(releaseChanges, params.commitList, params.pullRequestsBySha ?? {}, excludedChanges);
+    const changesForClassification = buildChangesForClassification(releaseChanges);
+    // Phase 4: Construct authoritative deterministic ReleaseDraft upfront as the baseline
+    const baselineAssignments = changesForClassification.length
+        ? applyDeterministicClassification(releaseChanges, fallbackCategoryAssignments(changesForClassification), changesForClassification)
+        : {};
+    const draft = {
+        version,
+        date,
+        changes: releaseChanges,
+        assignments: baselineAssignments,
+        excludedChanges,
+        fullChangelog: parsedRelease.fullChangelog,
+        sections: parsedRelease.sections,
+        sourceChanges,
+    };
+    let activeDraft = draft;
+    if (changesForClassification.length && !noAi) {
+        try {
+            const classification = await provider.classifyChanges(changesForClassification, {
+                throwOnError: true,
+            });
+            const aiAssignments = applyDeterministicClassification(releaseChanges, classification.assignments, changesForClassification);
+            activeDraft = {
+                ...draft,
+                assignments: aiAssignments,
+            };
+            fallbackReasons.push(...classification.diagnostics);
+            // Mark AI usage only when classification had input and a provider key is available.
+            aiUsed = aiUsed || hasProviderKey;
+        }
+        catch (err) {
+            if (err instanceof IncompleteClassificationError && !failOnLlmError) {
+                const partialAssignments = applyDeterministicClassification(releaseChanges, err.result.assignments, changesForClassification);
+                activeDraft = {
+                    ...draft,
+                    assignments: partialAssignments,
+                };
+                fallbackReasons.push(...err.result.diagnostics);
+                aiUsed = aiUsed || hasProviderKey;
+            }
+            else {
+                const message = isError(err) ? err.message : String(err);
+                if (failOnLlmError) {
+                    throw new LlmError(`LLM classification failed: ${message}`);
+                }
+                fallbackReasons.push(`LLM classification failed: ${message}`);
+                // Degradation gracefully retains baseline draft assignments
+            }
+        }
+    }
+    // Phase 5: Enforce completeness and empty-release behavior via validateReleaseResult
+    const outcome = validateReleaseResult(activeDraft, sourceChanges);
+    const section = outcome.kind === 'release'
+        ? buildSectionFromRelease({
+            ...activeDraft,
+        })
+        : '';
+    const llm = {
+        new_section_markdown: section,
+        insert_after_anchor: UNRELEASED_ANCHOR,
+        pr_title: `${PR_TITLE_PREFIX}${version}`,
+        pr_body: buildAutoPrBody(prevRef, releaseRef, false),
+        labels: [...DEFAULT_PR_LABELS],
+    };
+    if (!aiUsed && llm.pr_body) {
+        llm.pr_body = appendFallbackNote(llm.pr_body, fallbackReasons);
+    }
+    return { llm, draft: activeDraft, aiUsed, fallbackReasons, outcome };
+}

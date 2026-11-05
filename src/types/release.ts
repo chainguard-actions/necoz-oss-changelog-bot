@@ -1,0 +1,109 @@
+/** Structured representation of a single release bullet item. */
+export type ReleaseItem = {
+  /** Normalized title with conventional prefixes removed. */
+  title: string;
+  /** Original title before normalization, when available. */
+  rawTitle?: string;
+  /** GitHub username attributed to the change. */
+  author?: string;
+  /** Pull request number associated with the change. */
+  pr?: number;
+  /** Link to the pull request. */
+  url?: string;
+  /** Extracted WHY rationale explaining motivation behind the change. */
+  why?: string;
+};
+
+/** Stable identity assigned to a release change before classification. */
+export type ReleaseChangeId =
+  | `pr:${number}`
+  | `pr:${number}:c${number}`
+  | `commit:${string}`
+  | `release-note:${number}`;
+
+/** Source record from which a canonical release change was derived. */
+export type ReleaseChangeOrigin =
+  | { kind: 'pull-request'; number: number }
+  | {
+      kind: 'pull-request-subchange';
+      number: number;
+      subIndex: number;
+      commitSha?: string;
+    }
+  | { kind: 'commit'; sha: string }
+  | { kind: 'release-note'; index: number };
+
+/** Canonical release item with identity independent of its editable title. */
+export type ReleaseChange = ReleaseItem & {
+  /** Stable identifier used to reconcile classification and rendering. */
+  id: ReleaseChangeId;
+  /** Original source used to derive the stable identifier. */
+  origin: ReleaseChangeOrigin;
+};
+
+/** Additional sections surfaced from release notes. */
+export type ReleaseSection = {
+  /** Section heading text (e.g., "Breaking Changes"). */
+  heading: string;
+  /** Markdown body for the section. */
+  body: string;
+};
+
+/** Aggregated release data parsed from GitHub notes. */
+export type ParsedRelease = {
+  /** Parsed "What's Changed" items. */
+  items: ReleaseItem[];
+  /** Full changelog URL when provided. */
+  fullChangelog?: string;
+  /** Extra sections beyond the primary item list. */
+  sections?: ReleaseSection[];
+};
+
+/** Reason explaining why a source change was omitted from the final release. */
+export type ExclusionReason = 'collapsed-into-pr' | 'filtered' | 'duplicate';
+
+/** Record of an omitted source change with its rationale. */
+export type ExcludedReleaseChange = {
+  /** The source change that was omitted. */
+  change: ReleaseChange;
+  /** The typed reason for omission. */
+  reason: ExclusionReason;
+  /** Optional contextual detail (e.g. parent PR number). */
+  detail?: string;
+};
+
+/** Complete, structurally valid changelog draft produced before optional AI. */
+export type ReleaseDraft = {
+  /** Target version string without the leading 'v'. */
+  version: string;
+  /** Release date formatted as YYYY-MM-DD. */
+  date: string;
+  /** Canonical changes with stable IDs and deterministic classification. */
+  changes: ReleaseChange[];
+  /** Category assignments mapping each change ID to its bucket name. */
+  assignments: import('@/types/changelog.js').CategoryAssignments;
+  /** Tracked exclusions with typed reasons. */
+  excludedChanges: ExcludedReleaseChange[];
+  /** Full changelog compare link URL, when provided. */
+  fullChangelog?: string;
+  /** Extra Markdown sections preserved from GitHub release notes. */
+  sections?: ReleaseSection[];
+  /** Independent source changes ledger captured before transforms. */
+  sourceChanges: ReleaseChange[];
+};
+
+/** Final validated release payload ready for deterministic rendering. */
+export type ReleaseResult = ReleaseDraft;
+
+/** Typed outcome of release validation before rendering. */
+export type ReleaseOutcome =
+  | {
+      kind: 'release';
+      result: ReleaseResult;
+    }
+  | {
+      kind: 'no-changes';
+      version: string;
+      date: string;
+      excludedChanges: ExcludedReleaseChange[];
+    };

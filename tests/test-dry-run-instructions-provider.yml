@@ -1,0 +1,34 @@
+name: Test dry-run with provider and instructions
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record fixture checksum
+        run: sha256sum tests/fixtures/CHANGELOG.md > /tmp/fixture.sha
+      - id: action
+        uses: .
+        with:
+          changelog-path: tests/fixtures/CHANGELOG.md
+          base-branch: main
+          provider: openai
+          release-tag: HEAD
+          release-name: 0.0.3
+          instructions: "Keep entries concise."
+          instructions-file: tests/fixtures/changelog-instructions.md
+          dry-run: "true"
+          dry-run-json-report: "true"
+          fail-on-llm-error: "false"
+          require-provider: "false"
+          no-ai: "true"
+      - name: Assert fixture changelog untouched in dry-run
+        run: |
+          if ! sha256sum -c /tmp/fixture.sha; then
+            echo "FAIL: fixture changelog modified in dry-run mode"
+            exit 1
+          fi
+          echo "PASS"

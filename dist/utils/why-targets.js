@@ -1,0 +1,177 @@
+import { WHY_ELIGIBLE_SECTION_TITLES } from '../constants/why.js';
+import { renderMarkdownSections, splitMarkdownSections, } from './markdown-sections.js';
+import { isDependencyUpdateTitle } from './dependency-update.js';
+import { escapeRegExp } from './escape.js';
+import { isArray, isNumber, isString } from './is.js';
+import { parseWhyBullet, } from './why-pr-reference.js';
+const BOT_AUTHOR_RE = /(?:\[bot\]|bot$|renovate|dependabot)/i;
+const WHY_ELIGIBLE_SECTION_TITLE_SET = new Set(WHY_ELIGIBLE_SECTION_TITLES);
+const TOP_LEVEL_BULLET_RE = /^[-*]\s+/;
+function whyNoteKey(sectionTitle, prNumber) {
+    return `${sectionTitle}\0${prNumber}`;
+}
+function shouldSkipWhyTarget(itemText, author) {
+    return Boolean(isDependencyUpdateTitle(itemText) || (author && BOT_AUTHOR_RE.test(author)));
+}
+/**
+ * Extract PRs that can receive WHY notes from generated changelog markdown.
+ * @param sectionMarkdown Generated release section markdown.
+ * @param repository Repository whose pull requests are authoritative.
+ * @returns Eligible changelog PR targets after cheap pre-fetch filtering.
+ */
+export function extractWhyTargets(sectionMarkdown, repository) {
+    const targets = [];
+    let skippedBeforeFetch = 0;
+    const document = splitMarkdownSections(sectionMarkdown);
+    for (const section of document.sections) {
+        if (!WHY_ELIGIBLE_SECTION_TITLE_SET.has(section.name))
+            continue;
+        for (const line of section.lines) {
+            if (!TOP_LEVEL_BULLET_RE.test(line))
+                continue;
+            const parsedBullet = parseWhyBullet(line, repository);
+            if (!parsedBullet) {
+                skippedBeforeFetch += 1;
+                continue;
+            }
+            if (shouldSkipWhyTarget(parsedBullet.itemText, parsedBullet.author)) {
+                skippedBeforeFetch += 1;
+                continue;
+            }
+            targets.push({
+                prNumber: parsedBullet.prNumber,
+                itemText: parsedBullet.itemText,
+                sectionTitle: section.name,
+                author: parsedBullet.author,
+            });
+        }
+    }
+    return { targets, skippedBeforeFetch };
+}
+/**
+ * Insert accepted WHY notes under matching top-level changelog bullets.
+ * @param sectionMarkdown Generated release section markdown.
+ * @param notes Accepted WHY notes keyed by PR number.
+ * @param whyLabel User-visible WHY label.
+ * @param repository Repository whose pull requests are authoritative.
+ * @returns Release section markdown with nested WHY bullets.
+ */
+export function applyWhyNotesToSection(sectionMarkdown, notes, whyLabel, repository) {
+    if (notes.size === 0)
+        return sectionMarkdown;
+    const document = splitMarkdownSections(sectionMarkdown);
+    const notesBySectionAndPr = new Map(Array.from(notes.values()).map((note) => [
+        whyNoteKey(note.sectionTitle, note.prNumber),
+        note,
+    ]));
+    for (const section of document.sections) {
+        if (!WHY_ELIGIBLE_SECTION_TITLE_SET.has(section.name))
+            continue;
+        const outputLines = [];
+        for (let index = 0; index < section.lines.length; index += 1) {
+            const line = section.lines[index] ?? '';
+            outputLines.push(line);
+            if (!TOP_LEVEL_BULLET_RE.test(line))
+                continue;
+            const parsedBullet = parseWhyBullet(line, repository);
+            if (!parsedBullet)
+                continue;
+            const note = notesBySectionAndPr.get(whyNoteKey(section.name, parsedBullet.prNumber));
+            if (!note)
+                continue;
+            const nextLine = section.lines[index + 1] ?? '';
+            if (new RegExp(`^\\s+-\\s+${escapeRegExp(whyLabel)}\\s*:`, 'i').test(nextLine)) {
+                continue;
+            }
+            outputLines.push(`  - ${whyLabel}: ${note.why}`);
+        }
+        section.lines = outputLines;
+    }
+    return renderMarkdownSections(document);
+}
+/**
+ * Extract PRs that can receive WHY notes directly from structured release changes.
+ * WHY: Phase 4 builds targets before rendering so Markdown does not require regex parsing.
+ * @param changes Canonical release changes.
+ * @param assignments Category assignments per change ID.
+ * @returns Eligible changelog PR targets and skipped count.
+ */
+export function extractWhyTargetsFromChanges(changes, assignments) {
+    const targets = [];
+    let skippedBeforeFetch = 0;
+    for (const change of changes) {
+        const sectionTitle = assignments[change.id];
+        if (!sectionTitle || !WHY_ELIGIBLE_SECTION_TITLE_SET.has(sectionTitle)) {
+            continue;
+        }
+        if (change.pr === undefined) {
+            continue;
+        }
+        if (shouldSkipWhyTarget(change.title, change.author)) {
+            skippedBeforeFetch += 1;
+            continue;
+        }
+        targets.push({
+            prNumber: change.pr,
+            changeId: change.id,
+            sectionTitle,
+            itemText: change.title,
+            author: change.author,
+        });
+    }
+    return { targets, skippedBeforeFetch };
+}
+/**
+ * Attach accepted WHY notes directly to structured release changes.
+ * WHY: Phase 4 attaches notes to domain objects so the shared renderer is the
+ * sole author of final bullet markdown. Sub-changes look up their specific WHY note
+ * strictly by changeId, while regular pull requests fall back to prNumber for backward compatibility.
+ * @param changes Canonical release changes to enrich with why notes.
+ * @param notes Accepted WHY notes keyed by PR number or change ID, or an array of notes.
+ * @param assignments Category assignments for section matching.
+ */
+export function attachWhyNotesToChanges(changes, notes, assignments) {
+    const notesByChangeId = new Map();
+    const notesByPr = new Map();
+    if (isArray(notes)) {
+        for (const note of notes) {
+            if (note.changeId) {
+                notesByChangeId.set(note.changeId, note);
+            }
+            if (!notesByPr.has(note.prNumber)) {
+                notesByPr.set(note.prNumber, note);
+            }
+        }
+    }
+    else {
+        for (const [key, note] of notes.entries()) {
+            if (isString(key)) {
+                notesByChangeId.set(key, note);
+            }
+            else if (isNumber(key)) {
+                notesByPr.set(key, note);
+            }
+            if (note.changeId) {
+                notesByChangeId.set(note.changeId, note);
+            }
+            if (!notesByPr.has(note.prNumber)) {
+                notesByPr.set(note.prNumber, note);
+            }
+        }
+    }
+    for (const change of changes) {
+        // WHY: Sub-changes have unique changeIds and must strictly match by changeId
+        // to prevent falling back to a PR-level note (or sibling sub-change note) and
+        // erroneously duplicating rationale under multiple sub-changes.
+        const isSubChange = change.origin.kind === 'pull-request-subchange';
+        const note = notesByChangeId.get(change.id) ??
+            (!isSubChange && change.pr !== undefined
+                ? notesByPr.get(change.pr)
+                : undefined);
+        if (!note)
+            continue;
+        if (assignments[change.id] === note.sectionTitle) {
+            change.why = note.why;
+        }
+    }
+}

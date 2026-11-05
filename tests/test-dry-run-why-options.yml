@@ -1,0 +1,33 @@
+name: Test dry-run with WHY options (WHY disabled)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record fixture checksum
+        run: sha256sum tests/fixtures/CHANGELOG.md > /tmp/fixture.sha
+      - id: action
+        uses: .
+        with:
+          changelog-path: tests/fixtures/CHANGELOG.md
+          release-tag: HEAD
+          release-name: 0.0.5
+          dry-run: "true"
+          no-ai: "true"
+          why: "false"
+          why-engine: llm
+          why-max-prs: "3"
+          why-max-chars-per-pr: "1500"
+          why-confidence: high
+          why-label: "Why"
+      - name: Assert fixture changelog untouched in dry-run
+        run: |
+          if ! sha256sum -c /tmp/fixture.sha; then
+            echo "FAIL: fixture changelog modified in dry-run mode"
+            exit 1
+          fi
+          echo "PASS"

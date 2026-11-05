@@ -1,0 +1,213 @@
+import type { LLMInput } from '@/types/llm.js';
+import type { EditorialOutput } from '@/schema/editorial.js';
+import type { ProviderRuntimeConfig } from '@/types/config.js';
+import type { ClassifyChangesOptions } from '@/types/provider.js';
+import type { WhyExtractionInput, WhyExtractionOutput } from '@/types/why.js';
+import { outputSchema } from '@/utils/output-json-schema.js';
+import { extractJsonObject } from '@/utils/json-extract.js';
+import { postJson } from '@/utils/http.js';
+import { ANTHROPIC_API, ANTHROPIC_VERSION } from '@/constants/anthropic.js';
+import {
+  LLM_CLASSIFY_MAX_TOKENS,
+  LLM_GENERATE_MAX_TOKENS,
+  LLM_WHY_MAX_TOKENS,
+  LLM_TEMPERATURE_DEFAULT,
+} from '@/constants/prompt.js';
+import { PROVIDER_ANTHROPIC } from '@/constants/provider.js';
+import { RELEASE_NOTES_SYSTEM_PROMPT } from '@/constants/system-prompts.js';
+import {
+  buildClassificationPrompt,
+  buildClassificationAssignmentsJsonSchema,
+  classifyChangesWithFallback,
+} from '@/providers/classification.js';
+import { isArray, isRecord, isString } from '@/utils/is.js';
+import type {
+  ClassificationChange,
+  ClassificationResult,
+} from '@/types/changelog.js';
+import {
+  buildWhyExtractionPrompt,
+  WHY_EXTRACTION_SYSTEM_PROMPT,
+  whyExtractionJsonSchema,
+} from '@/providers/why.js';
+import { WhyExtractionOutputSchema } from '@/schema/why.js';
+import { ProviderBase } from '@/providers/base.js';
+import type { WhyExtractionUsage } from '@/types/why-extractor.js';
+import { normalizeWhyExtractionUsage } from '@/utils/why-extraction-usage.js';
+
+const SYSTEM_ANTHROPIC_CLASSIFY =
+  'Classify each release change into one provided category. Return a JSON object mapping every change ID to its category. Do not rewrite IDs.';
+
+/** Subset of an Anthropic WHY response used for token accounting. */
+type AnthropicWhyResponse = {
+  model?: string;
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+  };
+};
+
+/**
+ * Extract the assistant text content from an Anthropic Messages API response.
+ * @param json Raw JSON response.
+ * @returns First message text or an empty string.
+ */
+function extractAnthropicClassificationResponse(json: unknown): string {
+  // Prefer structured tool_use output when present.
+  if (isRecord(json) && isArray(json.content)) {
+    const first = json.content[0];
+    // tool_use content: { type: 'tool_use', name, input: {...} }
+    if (isRecord(first) && first.type === 'tool_use' && isRecord(first.input)) {
+      // Note: If first.input contains circular references, JSON.stringify will throw.
+      // If this is a concern, handle or document it explicitly.
+      return JSON.stringify(first.input);
+    }
+    // Fallback to plain text when model did not use tools/structured outputs.
+    if (isRecord(first) && isString(first.text)) {
+      return first.text;
+    }
+  }
+  return '';
+}
+
+export class AnthropicProvider extends ProviderBase {
+  name = PROVIDER_ANTHROPIC;
+  lastWhyExtractionUsage?: WhyExtractionUsage;
+  lastServedModel?: string;
+
+  constructor(config: ProviderRuntimeConfig) {
+    super(config);
+  }
+
+  async generate(input: LLMInput): Promise<EditorialOutput> {
+    const payload: Record<string, unknown> = {
+      model: this.modelName,
+      max_tokens: LLM_GENERATE_MAX_TOKENS,
+      temperature: LLM_TEMPERATURE_DEFAULT,
+      system: RELEASE_NOTES_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: JSON.stringify({
+            ...input,
+            requiredJsonSchema: outputSchema,
+          }),
+        },
+      ],
+    };
+
+    /** Subset of Anthropic Messages response we inspect. */
+    interface AnthropicResponse {
+      /** Ordered list of message blocks returned by the model. */
+      content?: Array<{
+        /** Text block with the serialized JSON payload. */
+        text?: string;
+      }>;
+    }
+
+    const json = await postJson<AnthropicResponse>(
+      ANTHROPIC_API,
+      payload,
+      {
+        'x-api-key': this.apiKey ?? '',
+        'anthropic-version': ANTHROPIC_VERSION,
+      },
+      'Anthropic error',
+    );
+    const outputText = json.content?.[0]?.text ?? '';
+    return extractJsonObject<EditorialOutput>(outputText);
+  }
+
+  async classifyChanges(
+    changes: ClassificationChange[],
+    options: ClassifyChangesOptions = {},
+  ): Promise<ClassificationResult> {
+    return classifyChangesWithFallback({
+      changes,
+      hasApiKey: Boolean(this.apiKey),
+      options,
+      invalidResponseMessage: 'Anthropic classify output did not match schema',
+      request: async () => {
+        const prompt = buildClassificationPrompt(changes);
+
+        const payload = {
+          model: this.modelName,
+          max_tokens: LLM_CLASSIFY_MAX_TOKENS,
+          temperature: 0,
+          system: SYSTEM_ANTHROPIC_CLASSIFY,
+          messages: [{ role: 'user', content: JSON.stringify(prompt) }],
+          tools: [
+            {
+              name: 'return_assignments',
+              description:
+                'Return a JSON object mapping every change ID to one category.',
+              input_schema: buildClassificationAssignmentsJsonSchema(changes),
+            },
+          ],
+          tool_choice: { type: 'tool', name: 'return_assignments' },
+        } as const;
+
+        const json = await postJson<unknown>(
+          ANTHROPIC_API,
+          payload,
+          {
+            'x-api-key': this.apiKey ?? '',
+            'anthropic-version': ANTHROPIC_VERSION,
+          },
+          'Anthropic classify error',
+        );
+        return extractAnthropicClassificationResponse(json) || '{}';
+      },
+    });
+  }
+
+  async extractWhyNotes(
+    input: WhyExtractionInput,
+  ): Promise<WhyExtractionOutput> {
+    this.lastWhyExtractionUsage = undefined;
+    this.lastServedModel = undefined;
+    if (!input.items.length) return { items: [] };
+
+    const payload = {
+      model: this.modelName,
+      max_tokens: LLM_WHY_MAX_TOKENS,
+      temperature: 0,
+      system: WHY_EXTRACTION_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: JSON.stringify(buildWhyExtractionPrompt(input)),
+        },
+      ],
+      tools: [
+        {
+          name: 'return_why_notes',
+          description: 'Return accepted WHY notes as JSON.',
+          input_schema: whyExtractionJsonSchema,
+        },
+      ],
+      tool_choice: { type: 'tool', name: 'return_why_notes' },
+    } as const;
+
+    const json = await postJson<AnthropicWhyResponse>(
+      ANTHROPIC_API,
+      payload,
+      {
+        'x-api-key': this.apiKey ?? '',
+        'anthropic-version': ANTHROPIC_VERSION,
+      },
+      'Anthropic WHY extraction error',
+    );
+    this.lastWhyExtractionUsage = normalizeWhyExtractionUsage({
+      inputTokens: json.usage?.input_tokens,
+      outputTokens: json.usage?.output_tokens,
+    });
+    this.lastServedModel = json.model;
+    const text = extractAnthropicClassificationResponse(json) || '{"items":[]}';
+    const parsed = WhyExtractionOutputSchema.safeParse(JSON.parse(text));
+    if (!parsed.success) {
+      throw new Error('Anthropic WHY extraction output did not match schema');
+    }
+    return parsed.data;
+  }
+}

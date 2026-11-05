@@ -1,0 +1,31 @@
+name: Test dry-run driven by config file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record checksums
+        run: |
+          sha256sum tests/fixtures/CHANGELOG.md > /tmp/fixture.sha
+          git rev-parse HEAD > /tmp/head.sha
+      - id: action
+        uses: .
+        with:
+          config-path: tests/fixtures/changelog-bot.config.json
+          release-tag: HEAD
+          release-name: 0.0.4
+      - name: Assert config-driven dry-run made no changes
+        run: |
+          if ! sha256sum -c /tmp/fixture.sha; then
+            echo "FAIL: fixture changelog modified despite dryRun in config"
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(cat /tmp/head.sha)" ]; then
+            echo "FAIL: commit created despite dryRun in config"
+            exit 1
+          fi
+          echo "PASS"

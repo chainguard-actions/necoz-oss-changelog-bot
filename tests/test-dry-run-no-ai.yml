@@ -1,0 +1,51 @@
+name: Test dry-run without AI
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record changelog checksum
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            sha256sum CHANGELOG.md > /tmp/changelog.sha
+          else
+            echo "missing" > /tmp/changelog.sha
+          fi
+          git rev-parse HEAD > /tmp/head.sha
+      - id: action
+        uses: .
+        with:
+          release-tag: HEAD
+          release-name: 9.9.9-acttest
+          release-body: "Test release body from act"
+          dry-run: "true"
+          no-ai: "true"
+      - name: Assert dry-run did not modify the repository
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            sha256sum CHANGELOG.md > /tmp/changelog.after
+          else
+            echo "missing" > /tmp/changelog.after
+          fi
+          if ! cmp -s /tmp/changelog.sha /tmp/changelog.after; then
+            echo "FAIL: CHANGELOG.md was modified in dry-run mode"
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(cat /tmp/head.sha)" ]; then
+            echo "FAIL: dry-run created a commit"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert git user configured by action
+        run: |
+          NAME="$(git config user.name)"
+          echo "user.name: $NAME"
+          if [ "$NAME" != "github-actions[bot]" ]; then
+            echo "FAIL: expected git user.name github-actions[bot]"
+            exit 1
+          fi
+          echo "PASS"

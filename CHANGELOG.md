@@ -1,0 +1,1404 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v0.11.0] - 2026-10-31
+
+### Added
+
+- typed metadata lookup results and error discrimination by @johnnylemonny in [#284](https://github.com/nyaomaru/changelog-bot/pull/284)
+- bound concurrent GitHub metadata lookups by @johnnylemonny in [#286](https://github.com/nyaomaru/changelog-bot/pull/286)
+- report degraded metadata in dry-run and JSON reports by @johnnylemonny in [#287](https://github.com/nyaomaru/changelog-bot/pull/287)
+
+### Fixed
+
+- require patched Node.js for eMudhra CA mitigation by @nyaomaru in [#285](https://github.com/nyaomaru/changelog-bot/pull/285)
+  - Why: Require patched Node.js to mitigate issues with compromised eMudhra CA certificate chains.
+- allow $schema in config file and publish JSON schema by @Prashaxt in [#288](https://github.com/nyaomaru/changelog-bot/pull/288)
+  - Why: Allowing $schema in the config file enables autocompletion and validation in editors without crashing the CLI.
+
+### Docs
+
+- 0.10.1 by @github-actions[bot] in [#278](https://github.com/nyaomaru/changelog-bot/pull/278)
+- add SECURITY.md and CODEOWNERS by @johnnylemonny in [#283](https://github.com/nyaomaru/changelog-bot/pull/283)
+- mark v1 phase 6 as implemented by @nyaomaru in [#290](https://github.com/nyaomaru/changelog-bot/pull/290)
+
+### Chore
+
+- bump the minor-and-patch group with 4 updates by @dependabot[bot] in [#289](https://github.com/nyaomaru/changelog-bot/pull/289)
+- Release: 0.11.0 by @github-actions[bot] in [#291](https://github.com/nyaomaru/changelog-bot/pull/291)
+
+### What's new 🚀
+
+#### Better metadata handling
+
+GitHub metadata lookups are now faster and easier to debug.
+
+- Run independent lookups with bounded concurrency
+- Distinguish rate limits, auth errors, missing data, invalid responses, and network failures
+- Keep generating changelogs even when metadata enrichment fails
+- Show degraded metadata details in `--dry-run` and JSON reports
+
+Phase 6 of the v1 pipeline is now complete! 😸
+
+A huge thanks to @johnnylemonny for driving the Phase 6 implementation across #284, #286, and #287! 🚀
+
+And thanks to @Prashaxt for improving config schema support in #288! 😸
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.10.1...v0.11.0
+
+[v0.11.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.11.0
+
+## [v0.10.1] - 2026-10-24
+
+### Fixed
+
+- distinguish missing and unreadable files by @jay23606 in [#272](https://github.com/nyaomaru/changelog-bot/pull/272)
+
+### Changed
+
+- use shared guards at runtime boundaries by @KingEmma7 in [#265](https://github.com/nyaomaru/changelog-bot/pull/265)
+- remove TypeScript suppression from GitHub API tests by @Prashaxt in [#274](https://github.com/nyaomaru/changelog-bot/pull/274)
+  - Why: The suppression of TypeScript checks was removed to expose hidden type errors in the GitHub API helper tests.
+
+### Docs
+
+- 0.10.0 by @github-actions[bot] in [#264](https://github.com/nyaomaru/changelog-bot/pull/264)
+- simplify contribution templates by @nyaomaru in [#273](https://github.com/nyaomaru/changelog-bot/pull/273)
+
+### Test
+
+- add focused coverage for release markdown helpers by @mangomac in [#275](https://github.com/nyaomaru/changelog-bot/pull/275)
+- cover WHY extractor selection by @erSpell in [#276](https://github.com/nyaomaru/changelog-bot/pull/276)
+
+### Chore
+
+- bump the minor-and-patch group with 5 updates by @dependabot[bot] in [#269](https://github.com/nyaomaru/changelog-bot/pull/269)
+- Release: 0.10.1 by @github-actions[bot] in [#277](https://github.com/nyaomaru/changelog-bot/pull/277)
+
+### New Contributors
+
+A very warm welcome to our five first-time contributors!
+
+- @KingEmma7 for improving runtime type safety in [#265](https://github.com/nyaomaru/changelog-bot/pull/265)
+- @jay23606 for improving changelog error handling in [#272](https://github.com/nyaomaru/changelog-bot/pull/272)
+- @Prashaxt for cleaning up GitHub API tests in [#274](https://github.com/nyaomaru/changelog-bot/pull/274)
+- @mangomac for adding release Markdown helper tests in [#275](https://github.com/nyaomaru/changelog-bot/pull/275)
+- @erSpell for expanding WHY extractor test coverage in [#276](https://github.com/nyaomaru/changelog-bot/pull/276)
+
+Thank you all for your time, effort, and contributions! Every contribution helps make this project better, and we're happy to have you here. 🐈💕
+
+Looking forward to building more together!
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.10.0...v0.10.1
+
+[v0.10.1]: https://github.com/nyaomaru/changelog-bot/compare/v0.10.0...v0.10.1
+
+## [v0.10.0] - 2026-10-23
+
+### Added
+
+- support sub-change WHY mapping for multi-change pull requests (#235) by @johnnylemonny in [#252](https://github.com/nyaomaru/changelog-bot/pull/252)
+
+### Fixed
+
+- preserve explicit PRs for sub-change expansion by @nyaomaru in [#260](https://github.com/nyaomaru/changelog-bot/pull/260)
+
+### Docs
+
+- 0.9.3 by @github-actions[bot] in [#258](https://github.com/nyaomaru/changelog-bot/pull/258)
+- mark v1 phases 4 and 5 complete by @nyaomaru in [#262](https://github.com/nyaomaru/changelog-bot/pull/262)
+
+### Chore
+
+- Release: 0.10.0 by @github-actions[bot] in [#263](https://github.com/nyaomaru/changelog-bot/pull/263)
+
+### What's new 🚀
+
+The v1 deterministic-first pipeline design now reflects the completed foundation through Phase 5.
+
+- Phases 1–5 are marked as implemented, covering stable change identities, deterministic classification and rendering, completeness validation, and explicit no-change results.
+- Phases 6–7 remain planned v1 work: enrichment diagnostics/concurrency controls and output-destination separation.
+
+Thanks [John](@johnnylemonny)! 👍
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.9.3...v0.10.0
+
+[v0.10.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.10.0
+
+## [v0.9.3] - 2026-10-19
+
+### Fixed
+
+- allow more time for npm propagation by @nyaomaru in [#255](https://github.com/nyaomaru/changelog-bot/pull/255)
+  - Why: Extend the changelog workflow’s npm availability wait from ~100 seconds to five minutes.
+- parse GitHub bot authors correctly by @nyaomaru in [#256](https://github.com/nyaomaru/changelog-bot/pull/256)
+
+### Docs
+
+- 0.9.2 by @github-actions[bot] in [#254](https://github.com/nyaomaru/changelog-bot/pull/254)
+
+### Chore
+
+- Release: 0.9.3 by @github-actions[bot] in [#257](https://github.com/nyaomaru/changelog-bot/pull/257)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.9.2...v0.9.3
+
+[v0.9.3]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.9.3
+
+## [v0.9.2] - 2026-10-19
+
+### Added
+
+- Release: 0.9.2 by [bot] by @github-actions in [#253](https://github.com/nyaomaru/changelog-bot/pull/253)
+
+### Fixed
+
+- pin changelog generation to the release version by @Anantha-K in [#251](https://github.com/nyaomaru/changelog-bot/pull/251)
+  - Why: The changelog generation was pinned to the release version to ensure it uses the correct version during the release process.
+
+### Docs
+
+- 0.9.1 by [bot] by @github-actions in [#249](https://github.com/nyaomaru/changelog-bot/pull/249)
+
+### New Contributors
+
+- @Anantha-K  made their first contribution in #251
+
+A huge thank you to @Anantha-K for making their first contribution to changelog-bot! 🙌
+
+Thank you for carefully working through the review feedback and helping make the release workflow more reliable! 😸
+
+And if you have some free time again, please feel free to come back and play around with changelog-bot anytime. You’re always welcome! 🚀
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.9.1...v0.9.2
+
+[v0.9.2]: https://github.com/nyaomaru/changelog-bot/compare/v0.9.1...v0.9.2
+
+## [v0.9.1] - 2026-10-18
+
+### Added
+
+- Release: 0.9.1 by [bot] by @github-actions in [#248](https://github.com/nyaomaru/changelog-bot/pull/248)
+
+### Fixed
+
+- categorize release automation as chore by @nyaomaru in [#247](https://github.com/nyaomaru/changelog-bot/pull/247)
+
+### Docs
+
+- 0.9.0 by [bot] by @github-actions in [#245](https://github.com/nyaomaru/changelog-bot/pull/245)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.9.0...v0.9.1
+
+[v0.9.1]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.9.1
+
+## [v0.9.0] - 2026-10-18
+
+### Added
+
+- Release: 0.9.0 by [bot] by @github-actions in [#244](https://github.com/nyaomaru/changelog-bot/pull/244)
+
+### Fixed
+
+- override js-yaml to 4.1.0 to address Dependabot alert #10 (sprintf-js) by @johnnylemonny in [#238](https://github.com/nyaomaru/changelog-bot/pull/238)
+- override js-yaml to 4.3.2 to address Dependabot alerts #14-#18 by @johnnylemonny in [#242](https://github.com/nyaomaru/changelog-bot/pull/242)
+
+### Changed
+
+- enforce completeness and empty-release behavior (v1 Phase 5) by @johnnylemonny in [#240](https://github.com/nyaomaru/changelog-bot/pull/240)
+
+### Docs
+
+- 0.8.0 by [bot] by @github-actions in [#233](https://github.com/nyaomaru/changelog-bot/pull/233)
+
+### Chore
+
+- bump the minor-and-patch group with 6 updates by [bot] by @dependabot in [#243](https://github.com/nyaomaru/changelog-bot/pull/243)
+
+### What's new 🚀
+
+Phase 5 of the v1 deterministic-first pipeline makes changelog generation more reliable, complete, and transparent.
+
+- Every source change must now be accounted for: it is either included in the release or recorded with an explicit exclusion reason. This prevents changes from silently disappearing during processing.
+- Release validation now rejects duplicate change IDs and ensures every included change has exactly one valid section assignment.
+- Empty release ranges now produce an explicit no-change result instead of inventing a “Summary of changes” entry. Dry runs clearly report the outcome, and PR creation is skipped when there is nothing to release.
+- The pipeline preserves an independent source ledger before commits are consolidated into pull requests, retaining an auditable record of changes that are collapsed into pull requests or otherwise excluded.
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.8.0...v0.9.0
+
+[v0.9.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.9.0
+
+## [v0.8.0] - 2026-10-10
+
+### Added
+
+- add xAI (Grok) provider support (#225) by @johnnylemonny in [#226](https://github.com/nyaomaru/changelog-bot/pull/226)
+  - Why: This PR adds xAI (Grok) as a supported LLM provider for changelog generation, classification, and WHY extraction.
+
+### Fixed
+
+- override brace-expansion to patched version by @johnnylemonny in [#219](https://github.com/nyaomaru/changelog-bot/pull/219)
+- distinguish issue references from pull request links by @nyaomaru in [#229](https://github.com/nyaomaru/changelog-bot/pull/229)
+  - Why: Stop treating every `#<number>` in a commit subject as a pull request to ensure accurate changelog links.
+- override handlebars to patched version by @nyaomaru in [#232](https://github.com/nyaomaru/changelog-bot/pull/232)
+
+### Changed
+
+- render changelog structure deterministically (v1 Phase 4) by @johnnylemonny in [#224](https://github.com/nyaomaru/changelog-bot/pull/224)
+- Release: 0.8.0 by [bot] by @github-actions in [#228](https://github.com/nyaomaru/changelog-bot/pull/228)
+
+### Docs
+
+- 0.7.0 by [bot] by @github-actions in [#218](https://github.com/nyaomaru/changelog-bot/pull/218)
+- revise v1 deterministic-first pipeline design by @nyaomaru in [#222](https://github.com/nyaomaru/changelog-bot/pull/222)
+- note Cloud Agent install and dry-run requirements by @nyaomaru in [#230](https://github.com/nyaomaru/changelog-bot/pull/230)
+
+### Chore
+
+- bump the actions group with 2 updates by [bot] by @dependabot in [#220](https://github.com/nyaomaru/changelog-bot/pull/220)
+- bump the minor-and-patch group across 1 directory with 7 updates by [bot] by @dependabot in [#223](https://github.com/nyaomaru/changelog-bot/pull/223)
+- bump the minor-and-patch group with 5 updates by [bot] by @dependabot in [#231](https://github.com/nyaomaru/changelog-bot/pull/231)
+
+### What's new 🚀
+
+Phase 4 of the v1 deterministic-first pipeline is here. `changelog-bot` now builds a complete, valid release draft from commits and PR metadata before any AI call. AI is an optional editorial enrichment layer rather than a requirement for producing a usable changelog.
+
+- Release structure is rendered deterministically by the backend, giving every generation path—including no-AI and WHY-enriched runs—a single consistent renderer.
+- Editorial suggestions are now sparse, stable-ID-based refinements. Unknown entries are rejected, missing entries retain their deterministic source data, and hard classification rules remain authoritative.
+- WHY extraction now enriches structured release data before rendering, instead of modifying already-generated Markdown.
+- Pull-request links no longer incorrectly point issue-only references to non-existent PRs.
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.7.0...v0.8.0
+
+[v0.8.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.8.0
+
+## [v0.7.0] - 2026-10-02
+
+### Added
+
+- add experimental Jev Noul selection engine by @nyaomaru in [#203](https://github.com/nyaomaru/changelog-bot/pull/203)
+  - Why: Add experimental Jev support for WHY extraction to improve decision-making processes.
+- jev why evaluation by @nyaomaru in [#207](https://github.com/nyaomaru/changelog-bot/pull/207)
+  - Why: Add an opt-in Jev WHY evaluation harness to enhance rationale assessment in PRs.
+
+### Fixed
+
+- support Windows development, cross-platform test runner, and normalize CRLF in contract tests by @johnnylemonny in [#210](https://github.com/nyaomaru/changelog-bot/pull/210)
+  - Why: Support Windows development to ensure tests run correctly across different platforms.
+- override js-yaml to patched version by @johnnylemonny in [#215](https://github.com/nyaomaru/changelog-bot/pull/215)
+
+### Changed
+
+- Release: 0.7.0 by [bot] by @github-actions in [#217](https://github.com/nyaomaru/changelog-bot/pull/217)
+
+### Docs
+
+- 0.6.14 by [bot] by @github-actions in [#200](https://github.com/nyaomaru/changelog-bot/pull/200)
+- document WHY evaluation runner options and CI workflow by @johnnylemonny in [#216](https://github.com/nyaomaru/changelog-bot/pull/216)
+
+### Test
+
+- persist reproducible evaluation artifacts by @johnnylemonny in [#211](https://github.com/nyaomaru/changelog-bot/pull/211)
+- calibrate Jev confidence thresholds on a broader corpus by @johnnylemonny in [#212](https://github.com/nyaomaru/changelog-bot/pull/212)
+
+### Chore
+
+- bump the minor-and-patch group with 6 updates by [bot] by @dependabot in [#202](https://github.com/nyaomaru/changelog-bot/pull/202)
+- bump the minor-and-patch group with 9 updates by [bot] by @dependabot in [#204](https://github.com/nyaomaru/changelog-bot/pull/204)
+
+### New Contributors
+
+* @johnnylemonny made their first contribution in https://github.com/nyaomaru/changelog-bot/pull/210
+
+A huge thank you to @johnnylemonny for making their first contribution in [#210](https://github.com/nyaomaru/changelog-bot/pull/210) and for continuing to contribute across this release. 🙌
+
+Beyond improving Windows development support, John helped build out the reproducible Jev evaluation artifacts and the broader calibration corpus that now form an important part of the experimental WHY evaluation workflow.
+
+Thank you for the thoughtful contributions, detailed follow-ups, and for helping make v0.7.0 better! 😸
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.14...v0.7.0
+
+[v0.7.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.7.0
+
+## [v0.6.14] - 2026-09-12
+
+### Added
+
+- Release: 0.6.14 by [bot] by @github-actions in [#199](https://github.com/nyaomaru/changelog-bot/pull/199)
+
+### Changed
+
+- consolidate deterministic classification by @nyaomaru in [#195](https://github.com/nyaomaru/changelog-bot/pull/195)
+- share common provider configuration by @nyaomaru in [#197](https://github.com/nyaomaru/changelog-bot/pull/197)
+
+### Docs
+
+- 0.6.13 by [bot] by @github-actions in [#194](https://github.com/nyaomaru/changelog-bot/pull/194)
+
+### Chore
+
+- bump the minor-and-patch group with 5 updates by [bot] by @dependabot in [#196](https://github.com/nyaomaru/changelog-bot/pull/196)
+- override browserslist to patched version by @nyaomaru in [#198](https://github.com/nyaomaru/changelog-bot/pull/198)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.13...v0.6.14
+
+[v0.6.14]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.14
+
+## [v0.6.13] - 2026-09-05
+
+### Changed
+
+- introduce canonical release change identity by @nyaomaru in [#190](https://github.com/nyaomaru/changelog-bot/pull/190)
+- classify release changes by stable ID by @nyaomaru in [#192](https://github.com/nyaomaru/changelog-bot/pull/192)
+
+### Docs
+
+- 0.6.12 by [bot] by @github-actions in [#188](https://github.com/nyaomaru/changelog-bot/pull/188)
+
+### Chore
+
+- version bump by @nyaomaru in [#191](https://github.com/nyaomaru/changelog-bot/pull/191)
+- bump the minor-and-patch group with 9 updates by [bot] by @dependabot in [#189](https://github.com/nyaomaru/changelog-bot/pull/189)
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/nyaomaru/changelog-bot/pull/189
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.12...v0.6.13
+
+[v0.6.13]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.13
+
+## [v0.6.12] - 2026-08-29
+
+### Changed
+
+- separate changelog run phase by @nyaomaru in [#185](https://github.com/nyaomaru/changelog-bot/pull/185)
+  - Why: This simplifies the main orchestration flow, runs independent GitHub lookups concurrently, and adds coverage for WHY enrichment finalization.
+
+### Docs
+
+- 0.6.11 by [bot] by @github-actions in [#183](https://github.com/nyaomaru/changelog-bot/pull/183)
+
+### Chore
+
+- upgrade TypeScript 7 and dependencies by @nyaomaru in [#184](https://github.com/nyaomaru/changelog-bot/pull/184)
+- update dependencies by @nyaomaru in [#186](https://github.com/nyaomaru/changelog-bot/pull/186)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.11...v0.6.12
+
+[v0.6.12]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.12
+
+## [v0.6.11] - 2026-08-22
+
+### Changed
+
+- standardize runtime type guards with is-kit by @nyaomaru in [#181](https://github.com/nyaomaru/changelog-bot/pull/181)
+
+### Docs
+
+- 0.6.10 by [bot] by @github-actions in [#180](https://github.com/nyaomaru/changelog-bot/pull/180)
+
+### Chore
+
+- Release: 0.6.11 by [bot] by @github-actions in [#182](https://github.com/nyaomaru/changelog-bot/pull/182)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.10...v0.6.11
+
+[v0.6.11]: https://github.com/nyaomaru/changelog-bot/compare/v0.6.10...v0.6.11
+
+## [v0.6.10] - 2026-08-15
+
+### Changed
+
+- separate category scoring responsibilities by @nyaomaru in [#178](https://github.com/nyaomaru/changelog-bot/pull/178)
+
+### Docs
+
+- 0.6.9 by [bot] by @github-actions in [#177](https://github.com/nyaomaru/changelog-bot/pull/177)
+
+### Chore
+
+- Release: 0.6.10 by [bot] by @github-actions in [#179](https://github.com/nyaomaru/changelog-bot/pull/179)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.6.9...v0.6.10
+
+[v0.6.10]: https://github.com/nyaomaru/changelog-bot/compare/v0.6.9...v0.6.10
+
+## [v0.6.9] - 2026-08-08
+
+### Changed
+
+- improve changelog file and git helper coverage by @nyaomaru in [#174](https://github.com/nyaomaru/changelog-bot/pull/174)
+- split GitHub API responsibilities by @nyaomaru in [#175](https://github.com/nyaomaru/changelog-bot/pull/175)
+  - Why: Split GitHub API responsibilities to centralize request headers and authentication while maintaining backward compatibility.
+
+### Docs
+
+- 0.6.8 by [bot] by @github-actions in [#173](https://github.com/nyaomaru/changelog-bot/pull/173)
+
+### Chore
+
+- Release: 0.6.9 by [bot] by @github-actions in [#176](https://github.com/nyaomaru/changelog-bot/pull/176)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.9
+
+[v0.6.9]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.9
+
+## [v0.6.8] - 2026-08-01
+
+### Changed
+
+- separate release and WHY responsibilities by @nyaomaru in [#171](https://github.com/nyaomaru/changelog-bot/pull/171)
+  - Why: To separate release and WHY responsibilities for better organization and clarity.
+
+### Docs
+
+- 0.6.7 by [bot] by @github-actions in [#170](https://github.com/nyaomaru/changelog-bot/pull/170)
+
+### Chore
+
+- Release: 0.6.8 by [bot] by @github-actions in [#172](https://github.com/nyaomaru/changelog-bot/pull/172)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.8
+
+[v0.6.8]: https://github.com/nyaomaru/changelog-bot/compare/v0.6.7...v0.6.8
+
+## [v0.6.7] - 2026-07-25
+
+### Added
+
+- extract WHY from description sections by @nyaomaru in [#166](https://github.com/nyaomaru/changelog-bot/pull/166)
+  - Why: Extract explicit rationale from `Description` sections using markers such as `WHY:`, `because`, and `in order to`.
+
+### Fixed
+
+- normalize semver-style release names by @nyaomaru in [#168](https://github.com/nyaomaru/changelog-bot/pull/168)
+
+### Changed
+
+- centralize provider classification fallback by @nyaomaru in [#167](https://github.com/nyaomaru/changelog-bot/pull/167)
+
+### Docs
+
+- 0.6.6 by [bot] by @github-actions in [#165](https://github.com/nyaomaru/changelog-bot/pull/165)
+
+### Chore
+
+- Release: 0.6.7 by [bot] by @github-actions in [#169](https://github.com/nyaomaru/changelog-bot/pull/169)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.7
+
+[v0.6.7]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.7
+
+## [v0.6.6] - 2026-07-18
+
+### Changed
+
+- separate changelog run concerns by @nyaomaru in [#163](https://github.com/nyaomaru/changelog-bot/pull/163)
+
+### Docs
+
+- 0.6.5 by [bot] by @github-actions in [#162](https://github.com/nyaomaru/changelog-bot/pull/162)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.6
+
+[v0.6.6]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.6
+
+## [v0.6.5] - 2026-07-11
+
+### Fixed
+
+- document exit codes and typed config errors by @nyaomaru in [#158](https://github.com/nyaomaru/changelog-bot/pull/158)
+  - Why: Document CLI exit codes and their `sysexits`-style rationale in README.
+
+### Changed
+
+- clarify category tuning rules by @nyaomaru in [#159](https://github.com/nyaomaru/changelog-bot/pull/159)
+- clarify release section rendering by @nyaomaru in [#160](https://github.com/nyaomaru/changelog-bot/pull/160)
+
+### Docs
+
+- 0.6.4 by [bot] by @github-actions in [#157](https://github.com/nyaomaru/changelog-bot/pull/157)
+
+### Chore
+
+- Release: 0.6.5 by [bot] by @github-actions in [#161](https://github.com/nyaomaru/changelog-bot/pull/161)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.5
+
+[v0.6.5]: https://github.com/nyaomaru/changelog-bot/compare/v0.6.4...v0.6.5
+
+## [v0.6.4] - 2026-07-05
+
+### Added
+
+- improve why template extraction by @nyaomaru in [#155](https://github.com/nyaomaru/changelog-bot/pull/155)
+
+### Docs
+
+- 0.6.3 by [bot] by @github-actions in [#154](https://github.com/nyaomaru/changelog-bot/pull/154)
+
+### Chore
+
+- Release: 0.6.4 by [bot] by @github-actions in [#156](https://github.com/nyaomaru/changelog-bot/pull/156)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.4
+
+[v0.6.4]: https://github.com/nyaomaru/changelog-bot/compare/v0.6.3...v0.6.4
+
+## [v0.6.3] - 2026-07-04
+
+### Changed
+
+- simplify changelog run and why utilities by @nyaomaru in [#151](https://github.com/nyaomaru/changelog-bot/pull/151)
+
+### Test
+
+- type changelog run mocks by @nyaomaru in [#152](https://github.com/nyaomaru/changelog-bot/pull/152)
+
+### Chore
+
+- Release: 0.6.3 by [bot] by @github-actions in [#153](https://github.com/nyaomaru/changelog-bot/pull/153)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.3
+
+[v0.6.3]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.3
+
+## [v0.6.2] - 2026-06-28
+
+### Docs
+
+- 0.6.1 by [bot] by @github-actions in [#146](https://github.com/nyaomaru/changelog-bot/pull/146)
+- define fallback and failure policy by @nyaomaru in [#147](https://github.com/nyaomaru/changelog-bot/pull/147)
+
+### Test
+
+- add public contract parity checks by @nyaomaru in [#148](https://github.com/nyaomaru/changelog-bot/pull/148)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.2
+
+[v0.6.2]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.2
+
+## [v0.6.1] - 2026-06-27
+
+### Fixed
+
+- enable WHY extraction in release workflow by @nyaomaru in [#142](https://github.com/nyaomaru/changelog-bot/pull/142)
+- report prompt customization diagnostics by @nyaomaru in [#144](https://github.com/nyaomaru/changelog-bot/pull/144)
+
+### Changed
+
+- extract PR reference parsing by @nyaomaru in [#143](https://github.com/nyaomaru/changelog-bot/pull/143)
+
+### Docs
+
+- 0.6.0 by [bot] by @github-actions in [#141](https://github.com/nyaomaru/changelog-bot/pull/141)
+
+### Chore
+
+- Release: 0.6.1 by [bot] by @github-actions in [#145](https://github.com/nyaomaru/changelog-bot/pull/145)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.1
+
+[v0.6.1]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.1
+
+## [v0.6.0] - 2026-06-20
+
+### Added
+
+- add opt-in WHY extraction by @nyaomaru in [#138](https://github.com/nyaomaru/changelog-bot/pull/138)
+
+### Docs
+
+- 0.5.1 by [bot] by @github-actions in [#139](https://github.com/nyaomaru/changelog-bot/pull/139)
+
+### Chore
+
+- Release: 0.6.0 by [bot] by @github-actions in [#140](https://github.com/nyaomaru/changelog-bot/pull/140)
+
+### What's new 🚀
+
+Opt-in WHY extraction adds concise reasoning beneath PR-linked changelog entries.
+
+```md
+- Add opt-in WHY extraction by @nyaomaru in [#138](...)
+  - Why: Make release notes clearer by explaining why the change was needed.
+```
+
+WHY notes are generated only when the PR description contains sufficiently clear evidence. Unclear, low-confidence, automated, and external-repository PR entries are skipped.
+
+#### Sample implementation
+
+CLI:
+
+```sh
+changelog-bot \
+  --release-tag HEAD \
+  --release-name 0.5.2 \
+  --provider openai \
+  --why \
+  --why-confidence medium \
+  --why-label Why
+```
+
+GitHub Action:
+
+```yaml
+- uses: nyaomaru/changelog-bot@v0
+  with:
+    release-tag: ${{ github.event.release.tag_name }}
+    release-name: ${{ github.event.release.tag_name }}
+    why: 'true'
+    why-confidence: medium
+    why-label: Why
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+Configuration file:
+
+```json
+{
+  "why": true,
+  "whyConfidence": "medium",
+  "whyLabel": "Why",
+  "whyMaxPrs": 30,
+  "whyMaxCharsPerPr": 800
+}
+```
+
+WHY extraction is disabled by default. It supports OpenAI, Anthropic, and Gemini.
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.0
+
+[v0.6.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.6.0
+
+## [v0.5.1] - 2026-06-13
+
+### Fixed
+
+- make PR labeling permission optional by @nyaomaru in [#135](https://github.com/nyaomaru/changelog-bot/pull/135)
+
+### Docs
+
+- 0.5.0 by [bot] by @github-actions in [#134](https://github.com/nyaomaru/changelog-bot/pull/134)
+
+### Chore
+
+- Release: 0.5.1 by [bot] by @github-actions in [#136](https://github.com/nyaomaru/changelog-bot/pull/136)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.5.1
+
+[v0.5.1]: https://github.com/nyaomaru/changelog-bot/compare/v0.5.0...v0.5.1
+
+## [v0.5.0] - 2026-06-13
+
+### Added
+
+- add reliability controls by @nyaomaru in [#131](https://github.com/nyaomaru/changelog-bot/pull/131)
+
+### Changed
+
+- polish GitHub Action docs and workflow inputs by @nyaomaru in [#132](https://github.com/nyaomaru/changelog-bot/pull/132)
+
+### Chore
+
+- 0.4.2 by [bot] by @github-actions in [#130](https://github.com/nyaomaru/changelog-bot/pull/130)
+- Release: 0.5.0 by [bot] by @github-actions in [#133](https://github.com/nyaomaru/changelog-bot/pull/133)
+
+### What's new 🚀
+
+- Reliability controls are now first-class in both the CLI and GitHub Action: require a configured provider key, fail on provider/API errors, or force deterministic no-AI output when release automation needs stricter behavior.
+- Dry-runs can emit a machine-readable provider report, making CI previews easier to inspect and automate.
+- GitHub Action documentation now includes the full Action input / CLI flag mapping, reusable workflow coverage, GitHub App and PAT permission guidance, workflow examples, and troubleshooting notes.
+
+#### Sample implementation
+
+```yaml
+- uses: nyaomaru/changelog-bot@v0
+  with:
+    release-tag: ${{ github.event.release.tag_name }}
+    release-name: ${{ github.event.release.tag_name }}
+    dry-run-json-report: 'true'
+    fail-on-llm-error: 'true'
+    require-provider: 'true'
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.5.0
+
+[v0.5.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.5.0
+
+## [v0.4.2] - 2026-06-07
+
+### Fixed
+
+- normalize nested release-note headings by @nyaomaru in [#128](https://github.com/nyaomaru/changelog-bot/pull/128)
+
+### Chore
+
+- 0.4.1 by [bot] by @github-actions in [#127](https://github.com/nyaomaru/changelog-bot/pull/127)
+- Release: 0.4.2 by [bot] by @github-actions in [#129](https://github.com/nyaomaru/changelog-bot/pull/129)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.4.2
+
+[v0.4.2]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.4.2
+
+## [v0.4.1] - 2026-06-06
+
+### Fixed
+
+- preserve prefixed section header by @nyaomaru in [#125](https://github.com/nyaomaru/changelog-bot/pull/125)
+
+### Chore
+
+- 0.4.0 by [bot] by @github-actions in [#124](https://github.com/nyaomaru/changelog-bot/pull/124)
+- Release: 0.4.1 by [bot] by @github-actions in [#126](https://github.com/nyaomaru/changelog-bot/pull/126)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.4.1
+
+[v0.4.1]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.4.1
+
+## [v0.4.0] - 2026-06-06
+
+### What's new 🚀
+
+- GitHub Action inputs now play nicer with `config-path`: omitted inputs can come from `changelog-bot.config.json`, while explicitly set workflow values still win.
+- Default-looking workflow values like `provider: openai`, `base-branch: main`, `changelog-path: CHANGELOG.md`, and `language: en` are now respected as explicit overrides.
+- `dry-run: 'false'` can now override `dryRun: true` from config files, so workflows can force a real PR run when needed.
+
+#### Sample implementation
+
+```yaml
+- uses: nyaomaru/changelog-bot@v0
+  with:
+    config-path: .github/changelog-bot.config.json
+    provider: openai
+    language: en
+    dry-run: 'false'
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+`.github/changelog-bot.config.json`
+
+```json
+{
+  "provider": "gemini",
+  "language": "ja",
+  "dryRun": true
+}
+```
+
+### Added
+
+- add config file support by @nyaomaru in [#122](https://github.com/nyaomaru/changelog-bot/pull/122)
+
+### Chore
+
+- 0.3.1 by [bot] by @github-actions in [#121](https://github.com/nyaomaru/changelog-bot/pull/121)
+- Release: 0.4.0 by [bot] by @github-actions in [#123](https://github.com/nyaomaru/changelog-bot/pull/123)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.4.0
+
+[v0.4.0]: https://github.com/nyaomaru/changelog-bot/compare/v0.3.1...v0.4.0
+
+## [v0.3.1] - 2026-05-30
+
+### Fixed
+
+- CLI version difference by @nyaomaru in [#119](https://github.com/nyaomaru/changelog-bot/pull/119)
+
+### Chore
+
+- Release: 0.3.1 by [bot] by @github-actions in [#120](https://github.com/nyaomaru/changelog-bot/pull/120)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.3.1
+
+[v0.3.1]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.3.1
+
+## [v0.3.0] - 2026-05-30
+
+### Added
+
+- add changelog generation customization by @nyaomaru in [#114](https://github.com/nyaomaru/changelog-bot/pull/114)
+
+### Fixed
+
+- read bumped version from package json by @nyaomaru in [#116](https://github.com/nyaomaru/changelog-bot/pull/116)
+
+### Chore
+
+- 0.2.0 by [bot] by @github-actions in [#113](https://github.com/nyaomaru/changelog-bot/pull/113)
+- update pnpm to 11.2.2 by @nyaomaru in [#115](https://github.com/nyaomaru/changelog-bot/pull/115)
+- Release: 0.3.0 by [bot] by @github-actions in [#117](https://github.com/nyaomaru/changelog-bot/pull/117)
+
+### What's new 🚀
+
+- Adds changelog customization for AI-generated output.
+- You can now set the output language with `--language`, such as `nl` for Dutch.
+- Adds `--instructions` for inline writing and grouping guidance.
+- Adds `--instructions-file` for repo-local changelog style rules, such as `.github/changelog-instructions.md`.
+
+Example:
+
+```sh
+changelog-bot \
+  --provider gemini \
+  --release-tag HEAD \
+  --release-name 0.3.0 \
+  --language nl \
+  --instructions "Schrijf kort en duidelijk in het Nederlands. Groepeer interne wijzigingen onder Chore." \
+  --dry-run
+```
+
+With an instructions file:
+
+```
+changelog-bot \
+  --provider openai \
+  --release-tag HEAD \
+  --release-name 0.3.0 \
+  --language nl \
+  --instructions-file .github/changelog-instructions.md \
+  --dry-run
+```
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.3.0
+
+[v0.3.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.3.0
+
+## [v0.2.0] - 2026-05-29
+
+### Added
+
+- gemini provider support by @nyaomaru in [#111](https://github.com/nyaomaru/changelog-bot/pull/111)
+
+### Chore
+
+- 0.1.17 by [bot] by @github-actions in [#110](https://github.com/nyaomaru/changelog-bot/pull/110)
+- Release: 0.2.0 by [bot] by @github-actions in [#112](https://github.com/nyaomaru/changelog-bot/pull/112)
+
+### What's new 🚀
+
+- Gemini provider support is now available via `--provider gemini` and GitHub Actions. in [#111](https://github.com/nyaomaru/changelog-bot/pull/111)
+- Configure it with `GEMINI_API_KEY` and optionally `GEMINI_MODEL`.
+- Dry-runs now show provider/model diagnostics and whether the run used AI or fallback generation.
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.2.0
+
+[v0.2.0]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.17...v0.2.0
+
+## [v0.1.17] - 2026-05-23
+
+### Changed
+
+- extract changelog runner and provider classification by @nyaomaru in [#108](https://github.com/nyaomaru/changelog-bot/pull/108)
+
+### Chore
+
+- 0.1.16 by [bot] by @github-actions in [#107](https://github.com/nyaomaru/changelog-bot/pull/107)
+- Release: 0.1.17 by [bot] by @github-actions in [#109](https://github.com/nyaomaru/changelog-bot/pull/109)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.17
+
+[v0.1.17]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.16...v0.1.17
+
+## [v0.1.16] - 2026-05-16
+
+### Changed
+
+- split changelog utilities by @nyaomaru in [#105](https://github.com/nyaomaru/changelog-bot/pull/105)
+
+### Chore
+
+- lock changelog refactor behavior by @nyaomaru in [#104](https://github.com/nyaomaru/changelog-bot/pull/104)
+- 0.1.15 by [bot] by @github-actions in [#103](https://github.com/nyaomaru/changelog-bot/pull/103)
+- Release: 0.1.16 by [bot] by @github-actions in [#106](https://github.com/nyaomaru/changelog-bot/pull/106)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.16
+
+[v0.1.16]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.15...v0.1.16
+
+## [v0.1.15] - 2026-05-09
+
+### Changed
+
+- split category scoring helpers by @nyaomaru in [#101](https://github.com/nyaomaru/changelog-bot/pull/101)
+
+### Chore
+
+- 0.1.14 by [bot] by @github-actions in [#100](https://github.com/nyaomaru/changelog-bot/pull/100)
+- Release: 0.1.15 by [bot] by @github-actions in [#102](https://github.com/nyaomaru/changelog-bot/pull/102)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.15
+
+[v0.1.15]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.14...v0.1.15
+
+## [v0.1.14] - 2026-05-02
+
+### Changed
+
+- centralize runtime config and split changelog output pipeline by @nyaomaru in [#98](https://github.com/nyaomaru/changelog-bot/pull/98)
+
+### Chore
+
+- 0.1.13 by [bot] by @github-actions in [#97](https://github.com/nyaomaru/changelog-bot/pull/97)
+- Release: 0.1.14 by [bot] by @github-actions in [#99](https://github.com/nyaomaru/changelog-bot/pull/99)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.14
+
+[v0.1.14]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.14
+
+## [v0.1.13] - 2026-04-25
+
+### Changed
+
+- extract shared markdown and title lookup helpers by @nyaomaru in [#94](https://github.com/nyaomaru/changelog-bot/pull/94)
+
+### Chore
+
+- 0.1.12 by [bot] by @github-actions in [#93](https://github.com/nyaomaru/changelog-bot/pull/93)
+- Release: 0.1.13 by [bot] by @github-actions in [#96](https://github.com/nyaomaru/changelog-bot/pull/96)
+- update dependencies to latest versions by @nyaomaru in [#95](https://github.com/nyaomaru/changelog-bot/pull/95)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.13
+
+[v0.1.13]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.13
+
+## [v0.1.12] - 2026-04-11
+
+### Changed
+
+- extract changelog CLI workflow helpers by @nyaomaru in [#91](https://github.com/nyaomaru/changelog-bot/pull/91)
+
+### Docs
+
+- 0.1.11 by [bot] by @github-actions in [#89](https://github.com/nyaomaru/changelog-bot/pull/89)
+
+### Chore
+
+- enforce minimum package age with pnpm dlx by @nyaomaru in [#90](https://github.com/nyaomaru/changelog-bot/pull/90)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.12
+
+[v0.1.12]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.12
+
+## [v0.1.11] - 2026-02-21
+
+### Fixed
+
+- preserve custom release-note sections like "What's New" by @nyaomaru in [#87](https://github.com/nyaomaru/changelog-bot/pull/87)
+
+### Docs
+
+- 0.1.10 by [bot] by @github-actions in [#85](https://github.com/nyaomaru/changelog-bot/pull/85)
+
+### Chore
+
+- Release: 0.1.11 by [bot] by @github-actions in [#88](https://github.com/nyaomaru/changelog-bot/pull/88)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.11
+
+[v0.1.11]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.11
+
+## [v0.1.10] - 2026-01-31
+
+### Fixed
+
+- move breaking changes section to the top by @nyaomaru in [#83](https://github.com/nyaomaru/changelog-bot/pull/83)
+
+### Docs
+
+- 0.1.9 by [bot] by @github-actions in [#81](https://github.com/nyaomaru/changelog-bot/pull/81)
+
+### Chore
+
+- Release: 0.1.10 by [bot] by @github-actions in [#84](https://github.com/nyaomaru/changelog-bot/pull/84)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.10
+
+[v0.1.10]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.10
+
+## [v0.1.9] - 2026-01-25
+
+### Fixed
+
+- detect dependency by @nyaomaru in [#79](https://github.com/nyaomaru/changelog-bot/pull/79)
+
+### Docs
+
+- 0.1.8 by [bot] by @github-actions in [#76](https://github.com/nyaomaru/changelog-bot/pull/76)
+
+### Chore
+
+- fix codex setting by @nyaomaru in [#78](https://github.com/nyaomaru/changelog-bot/pull/78)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.9
+
+[v0.1.9]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.8...v0.1.9
+
+## [v0.1.8] - 2026-01-12
+
+### Fixed
+
+- npm publish error by @nyaomaru in [#72](https://github.com/nyaomaru/changelog-bot/pull/72)
+
+### Docs
+
+- 0.1.7 by [bot] by @github-actions in [#71](https://github.com/nyaomaru/changelog-bot/pull/71)
+
+### Chore
+
+- add prettier by @nyaomaru in [#73](https://github.com/nyaomaru/changelog-bot/pull/73)
+- add lefthook by @nyaomaru in [#74](https://github.com/nyaomaru/changelog-bot/pull/74)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.8
+
+[v0.1.8]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.7...v0.1.8
+
+## [v0.1.7] - 2026-01-03
+
+### Fixed
+
+- npm publish EOTP error by @nyaomaru in [#68](https://github.com/nyaomaru/changelog-bot/pull/68)
+
+### Changed
+
+- split cli flow helpers by @nyaomaru in [#69](https://github.com/nyaomaru/changelog-bot/pull/69)
+
+### Docs
+
+- 0.1.6 by [bot] by @github-actions in [#67](https://github.com/nyaomaru/changelog-bot/pull/67)
+
+### Chore
+
+- Release: 0.1.7 by [bot] by @github-actions in [#70](https://github.com/nyaomaru/changelog-bot/pull/70)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.7
+
+[v0.1.7]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.6...v0.1.7
+
+## [v0.1.6] - 2025-12-27
+
+### Changed
+
+- move llm-parse by @nyaomaru in [#64](https://github.com/nyaomaru/changelog-bot/pull/64)
+- delete unused comments and move constants by @nyaomaru in [#65](https://github.com/nyaomaru/changelog-bot/pull/65)
+
+### Docs
+
+- 0.1.5 by [bot] by @github-actions in [#62](https://github.com/nyaomaru/changelog-bot/pull/62)
+
+### Chore
+
+- create release workflow by @nyaomaru in [#63](https://github.com/nyaomaru/changelog-bot/pull/63)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.6
+
+[v0.1.6]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.6
+
+## [v0.1.5] - 2025-12-20
+
+### Fixed
+
+- provider interface, typed errors, parse-or-retry, pure changelog by @nyaomaru in [#60](https://github.com/nyaomaru/changelog-bot/pull/60)
+
+### Docs
+
+- 0.1.4 by [bot] by @github-actions in [#57](https://github.com/nyaomaru/changelog-bot/pull/57)
+
+### Chore
+
+- setup renovate by @nyaomaru in [#59](https://github.com/nyaomaru/changelog-bot/pull/59)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.5
+
+[v0.1.5]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.5
+
+## [v0.1.4] - 2025-12-13
+
+### Changed
+
+- rrefactor(utils): extract isBucketName by @nyaomaru in [#55](https://github.com/nyaomaru/changelog-bot/pull/55)
+
+### Docs
+
+- 0.1.3 by [bot] by @github-actions in [#54](https://github.com/nyaomaru/changelog-bot/pull/54)
+
+### Chore
+
+- Release: 0.1.4 by [bot] by @github-actions in [#56](https://github.com/nyaomaru/changelog-bot/pull/56)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.4
+
+[v0.1.4]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.3...v0.1.4
+
+## [v0.1.3] - 2025-12-07
+
+### Changed
+
+- remove unused gitLog, centralize safeJsonParse, unify LLM sanitization by @nyaomaru in [#52](https://github.com/nyaomaru/changelog-bot/pull/52)
+
+### Docs
+
+- 0.1.2 by [bot] by @github-actions in [#51](https://github.com/nyaomaru/changelog-bot/pull/51)
+
+### Chore
+
+- Release: 0.1.3 by [bot] by @github-actions in [#53](https://github.com/nyaomaru/changelog-bot/pull/53)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.3
+
+[v0.1.3]: https://github.com/nyaomaru/changelog-bot/compare/v0.1.2...v0.1.3
+
+## [v0.1.2] - 2025-11-29
+
+### Fixed
+
+- lint error by @nyaomaru in [#49](https://github.com/nyaomaru/changelog-bot/pull/49)
+
+### Docs
+
+- 0.1.1 by [bot] by @github-actions in [#48](https://github.com/nyaomaru/changelog-bot/pull/48)
+
+### Chore
+
+- Release: 0.1.2 by [bot] by @github-actions in [#50](https://github.com/nyaomaru/changelog-bot/pull/50)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.2
+
+[v0.1.2]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.2
+
+## [v0.1.1] - 2025-11-25
+
+### Fixed
+
+- ai used flag by @nyaomaru in [#46](https://github.com/nyaomaru/changelog-bot/pull/46)
+
+### Docs
+
+- 0.1.0 by [bot] by @github-actions in [#45](https://github.com/nyaomaru/changelog-bot/pull/45)
+
+### Chore
+
+- Release: 0.1.1 by [bot] by @github-actions in [#47](https://github.com/nyaomaru/changelog-bot/pull/47)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.1
+
+[v0.1.1]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.1
+
+## [v0.1.0] - 2025-11-25
+
+### Added
+
+- add weighted scoring + LLM prefix guidance by @nyaomaru in [#41](https://github.com/nyaomaru/changelog-bot/pull/41)
+
+### Fixed
+
+- help message should be in English by @nyaomaru in [#42](https://github.com/nyaomaru/changelog-bot/pull/42)
+- release date by @nyaomaru in [#43](https://github.com/nyaomaru/changelog-bot/pull/43)
+
+### Docs
+
+- 0.0.8 by [bot] by @github-actions in [#40](https://github.com/nyaomaru/changelog-bot/pull/40)
+
+### Chore
+
+- Release: 0.1.0 by [bot] by @github-actions in [#44](https://github.com/nyaomaru/changelog-bot/pull/44)
+
+### What's new 🚀
+
+- Adds weighted heuristic scoring to classify PR titles into `Added/Changed/Fixed/Breaking` with higher accuracy and consistency.
+- Introduces LLM prefix guidance: injects conventional prefixes like `fix:`, `refactor:`, `feat:` for the classifier input to steer the model.
+- Preserves original titles for display; prefixes affect only LLM input, not the rendered changelog.
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.0
+
+[v0.1.0]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.1.0
+
+## [v0.0.8] - 2025-11-18
+
+### Added
+
+- changelog robustness (links, full compare, dedupe) by @nyaomaru in [#38](https://github.com/nyaomaru/changelog-bot/pull/38)
+
+### Docs
+
+- 0.0.7 by [bot] by @changelogbotapp in [#37](https://github.com/nyaomaru/changelog-bot/pull/37)
+
+### Chore
+
+- Release: 0.0.8 by [bot] by @github-actions in [#39](https://github.com/nyaomaru/changelog-bot/pull/39)
+
+### New Contributors
+
+- @changelogbotapp[bot] made their first contribution in https://github.com/nyaomaru/changelog-bot/pull/37
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.8
+
+[v0.0.8]: https://github.com/nyaomaru/changelog-bot/compare/v0.0.7...v0.0.8
+
+## [v0.0.7] - 2025-11-18
+
+### Added
+
+- Support GitHub App authentication for PR creation (PAT fallback) by @nyaomaru in [#29](https://github.com/nyaomaru/changelog-bot/pull/29)
+
+### Fixed
+
+- add App auth via installation tokens + CI-safe env by @nyaomaru in [#31](https://github.com/nyaomaru/changelog-bot/pull/31)
+- classification to use json base response by @nyaomaru in [#32](https://github.com/nyaomaru/changelog-bot/pull/32)
+
+### Docs
+
+- 0.0.6 by [bot] by @github-actions in [#27](https://github.com/nyaomaru/changelog-bot/pull/27)
+
+### Chore
+
+- Release: 0.0.7 by [bot] by @github-actions in [#30](https://github.com/nyaomaru/changelog-bot/pull/30)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.7
+
+[v0.0.7]: https://github.com/nyaomaru/changelog-bot/compare/v0.0.6...v0.0.7
+
+## [v0.0.6] - 2025-11-15
+
+### Fixed
+
+- category tune fix types by @nyaomaru in [#25](https://github.com/nyaomaru/changelog-bot/pull/25)
+
+### Chore
+
+- 0.0.5 by [bot] by @github-actions in [#24](https://github.com/nyaomaru/changelog-bot/pull/24)
+- Release: 0.0.6 by [bot] by @github-actions in [#26](https://github.com/nyaomaru/changelog-bot/pull/26)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.6
+
+[v0.0.6]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.6
+
+## [v0.0.5] - 2025-11-08
+
+### Changed
+
+- llm pre process logic by @nyaomaru in [#22](https://github.com/nyaomaru/changelog-bot/pull/22)
+
+### Chore
+
+- 0.0.4 by [bot] by @github-actions in [#20](https://github.com/nyaomaru/changelog-bot/pull/20)
+- Release: 0.0.5 by [bot] by @github-actions in [#23](https://github.com/nyaomaru/changelog-bot/pull/23)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.5
+
+[v0.0.5]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.5
+
+## [v0.0.4] - 2025-11-04
+
+### Changed
+
+- add LLM pre-processing and post-tuning to improve classification by @nyaomaru in [#18](https://github.
+
+### Chore
+
+- v0.0.3 by [bot] by @github-actions in [#17](https://github.com/nyaomaru/changelog-bot/pull/17)
+  com/nyaomaru/changelog-bot/pull/18)
+- Release: 0.0.4 by [bot] by @github-actions in [#19](https://github.com/nyaomaru/changelog-bot/pull/19)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.4
+
+[v0.0.4]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.4
+
+## [v0.0.3] - 2025-11-02
+
+### Fixed
+
+- PR title setting by @nyaomaru in [#15](https://github.com/nyaomaru/changelog-bot/pull/15)
+
+### Chore
+
+- version bump by @nyaomaru in [#9](https://github.com/nyaomaru/changelog-bot/pull/9)
+- v0.0.2 by [bot] by @github-actions in [#8](https://github.com/nyaomaru/changelog-bot/pull/8)
+- chore; update logo by @nyaomaru in [#10](https://github.com/nyaomaru/changelog-bot/pull/10)
+- major tag update by @nyaomaru in [#11](https://github.com/nyaomaru/changelog-bot/pull/11)
+- mise command by @nyaomaru in [#12](https://github.com/nyaomaru/changelog-bot/pull/12)
+- update documents by @nyaomaru in [#14](https://github.com/nyaomaru/changelog-bot/pull/14)
+- Release: 0.0.3 by [bot] by @github-actions in [#16](https://github.com/nyaomaru/changelog-bot/pull/16)
+
+### New Contributors
+
+- @github-actions[bot] made their first contribution in https://github.com/nyaomaru/changelog-bot/pull/8
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.3
+
+[v0.0.3]: https://github.com/nyaomaru/changelog-bot/compare/v0...v0.0.3
+
+## [v0.0.2] - 2025-10-27
+
+### Fixed
+
+- permission denied error by @nyaomaru in [#7](https://github.com/nyaomaru/changelog-bot/pull/7)
+
+### Chore
+
+- update action name by @nyaomaru in [#3](https://github.com/nyaomaru/changelog-bot/pull/3)
+- add update changelog workflow by @nyaomaru in [#4](https://github.com/nyaomaru/changelog-bot/pull/4)
+- update README by @nyaomaru in [#5](https://github.com/nyaomaru/changelog-bot/pull/5)
+- set release version by @nyaomaru in [#6](https://github.com/nyaomaru/changelog-bot/pull/6)
+
+**Full Changelog**: https://github.com/nyaomaru/changelog-bot/compare/v0.0.1...v0.0.2
+
+[v0.0.2]: https://github.com/nyaomaru/changelog-bot/compare/v0.0.1...v0.0.2
+
+## [0.0.1] - 2025-10-26
+
+### 🚀 Initial Release
+
+The first public release of **changelog-bot**. It's a CLI & GitHub Action that automates changelog generation and PR creation from your Git history.
+
+This early version aims to streamline the release workflow by generating human-readable changelogs using both conventional commits and LLM-based summaries.
+
+### ✨ Features
+
+- **CLI**: Generate changelogs directly from your terminal (`npx @nyaomaru/changelog-bot`).
+- **GitHub Action**: Drop-in workflow for automatic changelog PRs on new releases.
+- **AI integration (optional)**: Use OpenAI or Anthropic to produce tone-aware summaries.
+- **Heuristic fallback**: Works fully offline or without API keys.
+- **Duplicate detection**: Prevents multiple inserts for the same version.
+- **Compare links auto-update**: Ensures all release references stay current.
+- **CI-friendly**: Zero setup required, supports dry-run and base-branch configuration.
+
+### ⚙️ Configuration
+
+- Supports `.env` for `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, and `GITHUB_TOKEN`.
+- Exposes options like:
+  - `--release-tag`
+  - `--release-name`
+  - `--base-branch`
+  - `--changelog-path`
+  - `--provider`
+    and more.
+
+### 🧩 Developer Experience
+
+- Built with **TypeScript** and **pnpm**.
+- Managed via **mise** toolchain (`node 22`, `pnpm 10`).
+- Includes lint, build, test, and QA tasks for contributor consistency.
+
+### ⚠️ Early-stage notice
+
+> [!IMPORTANT]
+> This is an early-stage (`v0.0.1`) release.
+> APIs, CLI flags, and output formats may change before the first major version (`v1.0.0`).
+> If you integrate it into production workflows, please **pin the version** to avoid breaking changes.
+
+---
+
+**Full Changelog:** [v0.0.1](https://github.com/nyaomaru/changelog-bot/releases/tag/v0.0.1)

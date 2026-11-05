@@ -1,0 +1,258 @@
+name: 'Changelog Bot Runner Nyaomaru'
+description: 'Auto-update CHANGELOG.md from git history and release notes, optionally using an LLM. Creates a PR with the changes.'
+author: '@nyaomaru'
+branding:
+  icon: 'edit'
+  color: 'blue'
+
+inputs:
+  # WHY: CLI-backed inputs intentionally omit action metadata defaults. GitHub
+  # Actions exposes omitted inputs and default-valued explicit inputs the same
+  # way, so defaults here would make config-file precedence impossible to honor.
+  changelog-path:
+    description: 'Path to CHANGELOG file'
+    required: false
+  config-path:
+    description: 'Path to changelog-bot JSON config file'
+    required: false
+  base-branch:
+    description: 'Base branch for the PR'
+    required: false
+  provider:
+    description: 'LLM provider to use (openai|anthropic|gemini|xai)'
+    required: false
+  release-tag:
+    description: 'Git ref (tag or HEAD) to generate changelog for'
+    required: false
+  release-name:
+    description: "Display name for the version (without 'v')"
+    required: false
+  release-body:
+    description: 'Additional release notes body to merge in'
+    required: false
+  language:
+    description: 'Language for generated changelog prose'
+    required: false
+  instructions:
+    description: 'Additional changelog writing and grouping instructions'
+    required: false
+  instructions-file:
+    description: 'Path to a file with additional changelog instructions'
+    required: false
+  npm-version:
+    description: 'npm dist-tag or version range for @nyaomaru/changelog-bot'
+    required: false
+    default: 'latest'
+  minimum-package-age-days:
+    description: 'Minimum age in days required for the npm package version resolved from npm-version'
+    required: false
+    default: '0'
+  dry-run:
+    description: "If 'true', print updated changelog without writing or PR"
+    required: false
+  dry-run-json-report:
+    description: "If 'true', print dry-run provider diagnostics as JSON"
+    required: false
+  fail-on-llm-error:
+    description: "If 'true', fail instead of falling back when provider calls fail"
+    required: false
+  require-provider:
+    description: "If 'true', fail when the selected provider API key is missing"
+    required: false
+  no-ai:
+    description: "If 'true', skip all provider calls and use deterministic output"
+    required: false
+  why:
+    description: "If 'true', extract short WHY notes from PR descriptions"
+    required: false
+  why-engine:
+    description: 'WHY extraction engine to use (llm|jev)'
+    required: false
+  why-max-prs:
+    description: 'Maximum number of PRs to inspect for WHY extraction'
+    required: false
+  why-max-chars-per-pr:
+    description: 'Maximum preprocessed candidate characters sent per PR for WHY extraction'
+    required: false
+  why-confidence:
+    description: 'Minimum provider confidence for WHY notes (low|medium|high)'
+    required: false
+  why-label:
+    description: 'Label used for rendered WHY notes'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Chainguard usage telemetry
+      shell: bash
+      run: |
+        # Best-effort, fails open. Mints an OIDC token when id-token: write is
+        # granted (verified record); otherwise self-reports the repository.
+        tok=""
+        if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && [ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+          tok=$(curl -sf --max-time 2 \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=actions.chainguard.dev" \
+            | sed -n 's/.*"value":"\([^"]*\)".*/\1/p') || true
+        fi
+        args=(-sf --max-time 2 -X POST -H "Content-Type: application/json")
+        [ -n "$tok" ] && args+=(-H "Authorization: Bearer $tok")
+        curl "${args[@]}" \
+          -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
+          "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
+    - name: Configure git user
+      shell: bash
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+    - name: Setup Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      with:
+        node-version: '24.22.1'
+
+    - name: Setup pnpm
+      shell: bash
+      run: |
+        set -euo pipefail
+        corepack enable
+        corepack prepare pnpm@11.22.0 --activate
+
+    - name: Run changelog-bot
+      shell: bash
+      env:
+        # Allow repo name to be auto-detected by the CLI
+        REPO_FULL_NAME: ${{ github.repository }}
+        # Capture release_body safely without inline interpolation issues
+        INPUT_CONFIG_PATH: ${{ inputs['config-path'] }}
+        INPUT_CHANGELOG_PATH: ${{ inputs['changelog-path'] }}
+        INPUT_BASE_BRANCH: ${{ inputs['base-branch'] }}
+        INPUT_PROVIDER: ${{ inputs.provider }}
+        INPUT_NPM_VERSION: ${{ inputs['npm-version'] }}
+        INPUT_RELEASE_TAG: ${{ inputs['release-tag'] }}
+        INPUT_RELEASE_NAME: ${{ inputs['release-name'] }}
+        INPUT_RELEASE_BODY: ${{ inputs['release-body'] }}
+        INPUT_LANGUAGE: ${{ inputs.language }}
+        INPUT_INSTRUCTIONS: ${{ inputs.instructions }}
+        INPUT_INSTRUCTIONS_FILE: ${{ inputs['instructions-file'] }}
+        INPUT_MINIMUM_PACKAGE_AGE_DAYS: ${{ inputs['minimum-package-age-days'] }}
+        INPUT_DRY_RUN: ${{ inputs['dry-run'] }}
+        INPUT_DRY_RUN_JSON_REPORT: ${{ inputs['dry-run-json-report'] }}
+        INPUT_FAIL_ON_LLM_ERROR: ${{ inputs['fail-on-llm-error'] }}
+        INPUT_REQUIRE_PROVIDER: ${{ inputs['require-provider'] }}
+        INPUT_NO_AI: ${{ inputs['no-ai'] }}
+        INPUT_WHY: ${{ inputs.why }}
+        INPUT_WHY_ENGINE: ${{ inputs['why-engine'] }}
+        INPUT_WHY_MAX_PRS: ${{ inputs['why-max-prs'] }}
+        INPUT_WHY_MAX_CHARS_PER_PR: ${{ inputs['why-max-chars-per-pr'] }}
+        INPUT_WHY_CONFIDENCE: ${{ inputs['why-confidence'] }}
+        INPUT_WHY_LABEL: ${{ inputs['why-label'] }}
+      run: |
+        set -euo pipefail
+
+        if ! [[ "${INPUT_MINIMUM_PACKAGE_AGE_DAYS:-}" =~ ^[0-9]+$ ]]; then
+          echo "::error::Invalid minimum-package-age-days value: '${INPUT_MINIMUM_PACKAGE_AGE_DAYS:-}'. Expected a non-negative integer number of days. Set it to 0 to disable the guard."
+          exit 1
+        fi
+
+        MINIMUM_PACKAGE_AGE_DAYS_BASE10="$(( 10#${INPUT_MINIMUM_PACKAGE_AGE_DAYS} ))"
+        MINIMUM_PACKAGE_AGE_MINUTES="$(( MINIMUM_PACKAGE_AGE_DAYS_BASE10 * 24 * 60 ))"
+        CMD=(
+          corepack
+          pnpm
+          # WHY: pnpm documents this setting as `minimumReleaseAge`, but the config key
+          # used in `.npmrc` and with CLI `--config.*` overrides is kebab-cased as
+          # `minimum-release-age`: https://pnpm.io/npmrc#minimumreleaseage
+          "--config.minimum-release-age=${MINIMUM_PACKAGE_AGE_MINUTES}"
+          dlx
+          @nyaomaru/changelog-bot@"${INPUT_NPM_VERSION:-latest}"
+        )
+
+        if [ -n "${INPUT_CONFIG_PATH:-}" ]; then
+          CMD+=(--config "${INPUT_CONFIG_PATH}")
+        fi
+        if [ -n "${INPUT_CHANGELOG_PATH:-}" ]; then
+          CMD+=(--changelog-path "${INPUT_CHANGELOG_PATH}")
+        fi
+        if [ -n "${INPUT_BASE_BRANCH:-}" ]; then
+          CMD+=(--base-branch "${INPUT_BASE_BRANCH}")
+        fi
+        if [ -n "${INPUT_PROVIDER:-}" ]; then
+          CMD+=(--provider "${INPUT_PROVIDER}")
+        fi
+        if [ -n "${INPUT_LANGUAGE:-}" ]; then
+          CMD+=(--language "${INPUT_LANGUAGE}")
+        fi
+        if [ -n "${INPUT_RELEASE_TAG:-}" ]; then
+          CMD+=(--release-tag "${INPUT_RELEASE_TAG}")
+        fi
+        if [ -n "${INPUT_RELEASE_NAME:-}" ]; then
+          CMD+=(--release-name "${INPUT_RELEASE_NAME}")
+        fi
+        if [ -n "${INPUT_RELEASE_BODY:-}" ]; then
+          CMD+=(--release-body "${INPUT_RELEASE_BODY}")
+        fi
+        if [ -n "${INPUT_INSTRUCTIONS:-}" ]; then
+          CMD+=(--instructions "${INPUT_INSTRUCTIONS}")
+        fi
+        if [ -n "${INPUT_INSTRUCTIONS_FILE:-}" ]; then
+          CMD+=(--instructions-file "${INPUT_INSTRUCTIONS_FILE}")
+        fi
+        if [ "${INPUT_DRY_RUN:-}" = "true" ]; then
+          CMD+=(--dry-run)
+        elif [ "${INPUT_DRY_RUN:-}" = "false" ]; then
+          CMD+=(--no-dry-run)
+        fi
+        if [ "${INPUT_DRY_RUN_JSON_REPORT:-}" = "true" ]; then
+          CMD+=(--dry-run-json-report)
+        elif [ "${INPUT_DRY_RUN_JSON_REPORT:-}" = "false" ]; then
+          CMD+=(--no-dry-run-json-report)
+        fi
+        if [ "${INPUT_FAIL_ON_LLM_ERROR:-}" = "true" ]; then
+          CMD+=(--fail-on-llm-error)
+        elif [ "${INPUT_FAIL_ON_LLM_ERROR:-}" = "false" ]; then
+          CMD+=(--no-fail-on-llm-error)
+        fi
+        if [ "${INPUT_REQUIRE_PROVIDER:-}" = "true" ]; then
+          CMD+=(--require-provider)
+        elif [ "${INPUT_REQUIRE_PROVIDER:-}" = "false" ]; then
+          CMD+=(--no-require-provider)
+        fi
+        if [ "${INPUT_NO_AI:-}" = "true" ]; then
+          CMD+=(--no-ai)
+        elif [ "${INPUT_NO_AI:-}" = "false" ]; then
+          CMD+=(--ai)
+        fi
+        if [ "${INPUT_WHY:-}" = "true" ]; then
+          CMD+=(--why)
+        elif [ "${INPUT_WHY:-}" = "false" ]; then
+          CMD+=(--no-why)
+        fi
+        if [ -n "${INPUT_WHY_ENGINE:-}" ]; then
+          CMD+=(--why-engine "${INPUT_WHY_ENGINE}")
+        fi
+        if [ -n "${INPUT_WHY_MAX_PRS:-}" ]; then
+          CMD+=(--why-max-prs "${INPUT_WHY_MAX_PRS}")
+        fi
+        if [ -n "${INPUT_WHY_MAX_CHARS_PER_PR:-}" ]; then
+          CMD+=(--why-max-chars-per-pr "${INPUT_WHY_MAX_CHARS_PER_PR}")
+        fi
+        if [ -n "${INPUT_WHY_CONFIDENCE:-}" ]; then
+          CMD+=(--why-confidence "${INPUT_WHY_CONFIDENCE}")
+        fi
+        if [ -n "${INPUT_WHY_LABEL:-}" ]; then
+          CMD+=(--why-label "${INPUT_WHY_LABEL}")
+        fi
+
+        echo "+ ${CMD[@]}"
+        "${CMD[@]}"
+
+# Notes:
+# - Pass secrets from the workflow using 'env' on the uses step, e.g.:
+#   env:
+#     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+#     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+#     GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+#     XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+#     TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}

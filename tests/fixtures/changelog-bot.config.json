@@ -1,0 +1,6 @@
+{
+  "changelogPath": "tests/fixtures/CHANGELOG.md",
+  "language": "en",
+  "dryRun": true,
+  "noAi": true
+}
