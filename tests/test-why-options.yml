@@ -1,0 +1,53 @@
+name: Test WHY extraction options (dry-run, no-ai)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record state
+        run: |
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/why-before.sha; else echo none > /tmp/why-before.sha; fi
+          git rev-parse HEAD > /tmp/why-head-before
+      - id: action
+        uses: .
+        # WHY extraction looks up PRs for the repository, which is a
+        # non-existent sentinel slug under the harness; allow graceful failure.
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ''
+        with:
+          why: 'true'
+          why-engine: jev
+          why-max-prs: '5'
+          why-max-chars-per-pr: '500'
+          why-confidence: medium
+          why-label: Why
+          fail-on-llm-error: 'false'
+          require-provider: 'false'
+          no-ai: 'true'
+          release-tag: HEAD
+          release-name: 9.9.9-test
+          dry-run: 'true'
+      - name: Assert action ran (or failed gracefully) without writing
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ] && [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/why-after.sha; else echo none > /tmp/why-after.sha; fi
+          if ! cmp -s /tmp/why-before.sha /tmp/why-after.sha; then
+            echo "FAIL: CHANGELOG.md was modified during dry-run"
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(cat /tmp/why-head-before)" ]; then
+            echo "FAIL: HEAD moved during dry-run"
+            exit 1
+          fi
+          echo "PASS: outcome $OUTCOME"

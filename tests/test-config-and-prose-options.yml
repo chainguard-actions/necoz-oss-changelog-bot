@@ -1,0 +1,53 @@
+name: Test config file and prose options (dry-run, no-ai)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Prepare config and instructions files
+        run: |
+          mkdir -p /tmp/cb-test
+          echo '{}' > /tmp/cb-test/changelog-bot.json
+          printf 'Group entries by feature area.\nKeep each bullet short.\n' > /tmp/cb-test/instructions.md
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/cb-test/before.sha; else echo none > /tmp/cb-test/before.sha; fi
+          git rev-parse HEAD > /tmp/cb-test/head-before
+      - id: action
+        uses: .
+        env:
+          GITHUB_TOKEN: ''
+          OPENAI_API_KEY: ''
+        with:
+          config-path: /tmp/cb-test/changelog-bot.json
+          base-branch: main
+          provider: openai
+          language: English
+          instructions: 'Use concise past-tense bullets.'
+          instructions-file: /tmp/cb-test/instructions.md
+          release-tag: HEAD
+          release-name: 9.9.9-test
+          dry-run: 'true'
+          dry-run-json-report: 'true'
+          no-ai: 'true'
+      - name: Assert success and nothing was written
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/cb-test/after.sha; else echo none > /tmp/cb-test/after.sha; fi
+          if ! cmp -s /tmp/cb-test/before.sha /tmp/cb-test/after.sha; then
+            echo "FAIL: CHANGELOG.md was modified during dry-run"
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(cat /tmp/cb-test/head-before)" ]; then
+            echo "FAIL: HEAD moved during dry-run"
+            exit 1
+          fi
+          echo "PASS"

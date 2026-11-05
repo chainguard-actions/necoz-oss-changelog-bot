@@ -1,0 +1,37 @@
+name: Test dry-run with custom changelog path and release body
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record fixture checksum
+        run: sha256sum tests/fixtures/CHANGELOG.md > /tmp/before.sha
+      - id: action
+        uses: .
+        env:
+          GITHUB_TOKEN: ''
+        with:
+          changelog-path: tests/fixtures/CHANGELOG.md
+          release-tag: HEAD
+          release-name: 1.2.3
+          release-body: 'Highlights include a nice new feature and a bug fix.'
+          dry-run: 'true'
+          no-ai: 'true'
+      - name: Assert success and fixture untouched
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if ! sha256sum -c /tmp/before.sha; then
+            echo "FAIL: fixture changelog modified during dry-run"
+            exit 1
+          fi
+          echo "PASS"

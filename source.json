@@ -1,6 +1,12 @@
 {
   "owner": "nyaomaru",
   "repo": "changelog-bot",
-  "version": "",
-  "url": "https://github.com/nyaomaru/changelog-bot"
+  "version": "v0.11.0",
+  "commit_sha": "8e6a336f6568fdf3685490a4e9ca3fe70983b99d",
+  "url": "https://github.com/nyaomaru/changelog-bot",
+  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
+  "test_agent_version": "2",
+  "harden_agent_version": "2",
+  "dependency_fingerprint": "sha256:3b0dc2ccf490059bbbed8fac317b1b051184dad94a4bbcbd3705c4d8856cf374"
 }

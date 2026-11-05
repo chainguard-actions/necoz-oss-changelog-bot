@@ -1,0 +1,61 @@
+/** Supported LLM provider identifiers. */
+export type ProviderName = 'openai' | 'anthropic' | 'gemini' | 'xai';
+
+/** Canonical change sent to editorial provider. */
+export type EditorialPromptChange = {
+  /** Stable change ID (e.g. 'pr:10', 'commit:abc'). */
+  id: string;
+  /** Normalized display title. */
+  title: string;
+  /** Categorized bucket if known. */
+  category?: string;
+};
+
+/** Input payload shared across all LLM providers. */
+export type LLMInput = {
+  /** Repository identifier in `owner/repo` format. */
+  repo: string;
+  /** Release version without the leading `v`. */
+  version: string;
+  /** ISO date string for the release. */
+  date: string;
+  /** Git ref (tag or HEAD) representing the release. */
+  releaseTag: string;
+  /** Previous git tag used to compute compare ranges. */
+  prevTag: string;
+  /** Release notes body pulled from GitHub (if available). */
+  releaseBody: string;
+  /** `git log` output for recent commits. */
+  gitLog: string;
+  /** Formatted list of merged PRs. */
+  mergedPRs: string;
+  /** Truncated snapshot of the existing changelog. */
+  changelogPreview: string;
+  /** Output language requested for generated changelog text. */
+  language: string;
+  /** Optional user-provided writing and grouping guidance. */
+  customInstructions?: string;
+  /** Canonical changes with stable IDs from ReleaseDraft for editorial enrichment. */
+  changes?: EditorialPromptChange[];
+};
+
+/** Structured output expected from provider responses. */
+export type LLMOutput = {
+  /** Markdown for the newly generated changelog section. */
+  new_section_markdown: string;
+  /** Anchor line after which to insert the new section. */
+  insert_after_anchor?: string;
+  /** Optional compare link line for the release header. */
+  compare_link_line?: string;
+  /** Optional compare link update for the Unreleased section. */
+  unreleased_compare_update?: string;
+  /** Suggested pull request title. */
+  pr_title: string;
+  /** Suggested pull request body. */
+  pr_body: string;
+  /** Labels that should be applied to the generated PR. */
+  labels?: string[];
+};
+
+/** Contract implemented by provider adapters. */
+// Provider contract moved to '@/types/provider'.

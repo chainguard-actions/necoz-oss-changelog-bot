@@ -1,0 +1,42 @@
+name: Test dry-run with no-ai
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Record changelog checksum
+        run: |
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/before.sha; else echo none > /tmp/before.sha; fi
+          git rev-parse HEAD > /tmp/head-before
+      - id: action
+        uses: .
+        env:
+          GITHUB_TOKEN: ''
+        with:
+          release-tag: HEAD
+          release-name: 9.9.9-test
+          dry-run: 'true'
+          no-ai: 'true'
+      - name: Assert step succeeded and nothing was written
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if [ -f CHANGELOG.md ]; then sha256sum CHANGELOG.md > /tmp/after.sha; else echo none > /tmp/after.sha; fi
+          if ! cmp -s /tmp/before.sha /tmp/after.sha; then
+            echo "FAIL: CHANGELOG.md was modified during dry-run"
+            exit 1
+          fi
+          if [ "$(git rev-parse HEAD)" != "$(cat /tmp/head-before)" ]; then
+            echo "FAIL: HEAD moved during dry-run"
+            exit 1
+          fi
+          echo "PASS"

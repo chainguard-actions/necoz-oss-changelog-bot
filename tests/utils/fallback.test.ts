@@ -1,0 +1,71 @@
+// @ts-nocheck
+import { test, expect, describe } from '@jest/globals';
+import { fallbackSection } from '@/utils/fallback.js';
+
+describe('fallbackSection', () => {
+  test('groups commits by conventional prefix and formats bullets', () => {
+    const logs = [
+      // short sha + subject
+      'abc1234 feat: Add amazing feature',
+      'def5678 fix(scope): Correct bug',
+      '9876abc docs: Improve README',
+    ].join('\n');
+
+    const md = fallbackSection({
+      version: '0.2.0',
+      date: '2024-01-02',
+      logs,
+      prMapBySha: {
+        abc1234: [101],
+        def5678: [202],
+      },
+    });
+
+    expect(md).toContain('## [v0.2.0] - 2024-01-02');
+    expect(md).toContain('### Added');
+    expect(md).toContain('### Fixed');
+    expect(md).toContain('### Docs');
+    expect(md).toContain('- Add amazing feature (#101)');
+    expect(md).toContain('- Correct bug (#202)');
+  });
+
+  test('places scoped and unscoped breaking commits before their base types', () => {
+    const md = fallbackSection({
+      version: '1.0.0',
+      date: '2026-09-05',
+      logs: [
+        'abc1234 feat(core)!: Replace the output contract',
+        'def5678 fix!: Remove legacy parsing',
+      ].join('\n'),
+    });
+
+    expect(md).toContain('### Breaking Changes');
+    expect(md).toContain('- Replace the output contract');
+    expect(md).toContain('- Remove legacy parsing');
+    expect(md).not.toContain('### Added');
+    expect(md).not.toContain('### Fixed');
+  });
+
+  test('keeps an issue reference in the subject instead of treating it as a pull request', () => {
+    const md = fallbackSection({
+      version: '0.8.0',
+      date: '2026-10-06',
+      logs: 'abc1234 feat: add xAI provider support (#225)',
+    });
+
+    expect(md).toContain('- add xAI provider support (#225)');
+    expect(md.match(/#225/g)).toHaveLength(1);
+  });
+
+  test('does not fabricate Summary of changes when log is empty', () => {
+    const md = fallbackSection({
+      version: '0.1.0',
+      date: '2026-10-14',
+      logs: '',
+    });
+
+    expect(md).toBe('## [v0.1.0] - 2026-10-14');
+    expect(md).not.toContain('Summary of changes');
+    expect(md).not.toContain('### Changed');
+  });
+});
