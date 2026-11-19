@@ -1,0 +1,33 @@
+name: Test output=file with no-ai updates changelog on disk
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Seed a changelog file
+        run: |
+          mkdir -p act-changelog-test
+          printf '# Changelog\n\n' > act-changelog-test/CHANGELOG.md
+          cat act-changelog-test/CHANGELOG.md
+      - id: action
+        uses: .
+        with:
+          changelog-path: act-changelog-test/CHANGELOG.md
+          release-tag: HEAD
+          release-name: 9.8.7
+          output: file
+          no-ai: 'true'
+      - name: Assert changelog was updated with the release
+        run: |
+          echo "--- changelog content ---"
+          cat act-changelog-test/CHANGELOG.md
+          echo "-------------------------"
+          if ! grep -q '9\.8\.7' act-changelog-test/CHANGELOG.md; then
+            echo "FAIL: expected release name 9.8.7 in changelog"
+            exit 1
+          fi
+          echo "PASS"

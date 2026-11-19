@@ -1,0 +1,43 @@
+name: Test WHY tuning options are accepted (dry-run, no-ai)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Seed a changelog file
+        run: |
+          mkdir -p act-why-test
+          printf '# Changelog\n\n' > act-why-test/CHANGELOG.md
+          sha256sum act-why-test/CHANGELOG.md > /tmp/changelog-why-before.sha
+      - id: action
+        uses: .
+        with:
+          changelog-path: act-why-test/CHANGELOG.md
+          release-tag: HEAD
+          release-name: 4.5.6
+          dry-run: 'true'
+          no-ai: 'true'
+          why: 'false'
+          why-engine: jev
+          why-max-prs: '5'
+          why-max-chars-per-pr: '400'
+          why-confidence: high
+          why-label: Reason
+      - name: Assert action succeeded and changelog is unchanged
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if ! sha256sum -c /tmp/changelog-why-before.sha; then
+            echo "FAIL: dry-run modified the changelog file"
+            exit 1
+          fi
+          echo "PASS"

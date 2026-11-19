@@ -1,0 +1,24 @@
+# WHY: Delay installs of newly published packages for 48 hours to reduce
+# exposure to compromised releases before the ecosystem has time to react.
+minimumReleaseAge: 2880
+
+overrides:
+  browserslist: 4.28.7
+  brace-expansion@<2.0.0: 1.1.21
+  brace-expansion@>=2.0.0 <3.0.0: 2.1.7
+  handlebars: 4.7.10
+  js-yaml: 4.3.2
+  # WHY: Older glob versions cannot traverse minimatch v11 pattern matchers.
+  glob@>=9.0.0 <14.0.2: 14.0.2
+  # WHY: GHSA-g3hv-75wg-m249 has no patched release before v11.
+  minimatch@>=7.0.0 <11.0.1: 11.0.1
+
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  lefthook: false
+  unrs-resolver: false
+
+# WHY: GHSA-gcqx-w48m-w2h4 has no upstream fix yet.
+patchedDependencies:
+  deepmerge@4.3.1: patches/deepmerge@4.3.1.patch

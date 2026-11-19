@@ -1,0 +1,50 @@
+name: Test prompt customization and provider flags in dry-run with no-ai
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Seed a changelog file
+        run: |
+          mkdir -p act-custom-test
+          printf '# Changelog\n\n' > act-custom-test/CHANGELOG.md
+          sha256sum act-custom-test/CHANGELOG.md > /tmp/changelog-custom-before.sha
+          printf 'Group entries by user-visible impact.\n' > act-custom-test/instructions.md
+      - id: action
+        uses: .
+        with:
+          changelog-path: act-custom-test/CHANGELOG.md
+          base-branch: main
+          provider: openai
+          release-tag: HEAD
+          release-name: 3.1.4
+          release-body: |
+            ## What's Changed
+            * Add widget support by @tester in #1
+          language: ja
+          audience: user
+          instructions: 'Use concise bullet points.'
+          instructions-file: act-custom-test/instructions.md
+          dry-run: 'true'
+          dry-run-json-report: 'true'
+          fail-on-llm-error: 'false'
+          require-provider: 'false'
+          no-ai: 'true'
+      - name: Assert action succeeded and changelog is unchanged
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if ! sha256sum -c /tmp/changelog-custom-before.sha; then
+            echo "FAIL: dry-run modified the changelog file"
+            exit 1
+          fi
+          echo "PASS"

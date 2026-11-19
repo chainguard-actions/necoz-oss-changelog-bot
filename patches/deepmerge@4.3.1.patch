@@ -1,0 +1,78 @@
+diff --git a/dist/cjs.js b/dist/cjs.js
+index 7c36cbdd06cc22c92d590be3f87a08a91ca06b40..03816428b2e53dc54a9afc3117c3ba547bfe1946 100644
+--- a/dist/cjs.js
++++ b/dist/cjs.js
+@@ -76,15 +76,20 @@ function propertyIsUnsafe(target, key) {
+ 			&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
+ }
+ 
++function keyIsForbidden(key) {
++	return key === '__proto__'
++}
++
+ function mergeObject(target, source, options) {
+ 	var destination = {};
+ 	if (options.isMergeableObject(target)) {
+ 		getKeys(target).forEach(function(key) {
++			if (keyIsForbidden(key)) { return }
+ 			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+ 		});
+ 	}
+ 	getKeys(source).forEach(function(key) {
+-		if (propertyIsUnsafe(target, key)) {
++		if (keyIsForbidden(key) || propertyIsUnsafe(target, key)) {
+ 			return
+ 		}
+ 
+diff --git a/dist/umd.js b/dist/umd.js
+index 4071e7c56ec8e5273fe166f6e723ac460fab8b72..75c5b67330865cd345356a1baa17b091a9f49323 100644
+--- a/dist/umd.js
++++ b/dist/umd.js
+@@ -80,15 +80,20 @@
+ 				&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
+ 	}
+ 
++	function keyIsForbidden(key) {
++		return key === '__proto__'
++	}
++
+ 	function mergeObject(target, source, options) {
+ 		var destination = {};
+ 		if (options.isMergeableObject(target)) {
+ 			getKeys(target).forEach(function(key) {
++				if (keyIsForbidden(key)) { return }
+ 				destination[key] = cloneUnlessOtherwiseSpecified(target[key], options);
+ 			});
+ 		}
+ 		getKeys(source).forEach(function(key) {
+-			if (propertyIsUnsafe(target, key)) {
++			if (keyIsForbidden(key) || propertyIsUnsafe(target, key)) {
+ 				return
+ 			}
+ 
+diff --git a/index.js b/index.js
+index 77968aed5d456cccc294f60912ef381fa1e52a7b..fd5f9942fd36cac1202a75c324dfdc8979efd0b3 100644
+--- a/index.js
++++ b/index.js
+@@ -51,15 +51,20 @@ function propertyIsUnsafe(target, key) {
+ 			&& Object.propertyIsEnumerable.call(target, key)) // and also unsafe if they're nonenumerable.
+ }
+ 
++function keyIsForbidden(key) {
++	return key === '__proto__'
++}
++
+ function mergeObject(target, source, options) {
+ 	var destination = {}
+ 	if (options.isMergeableObject(target)) {
+ 		getKeys(target).forEach(function(key) {
++			if (keyIsForbidden(key)) { return }
+ 			destination[key] = cloneUnlessOtherwiseSpecified(target[key], options)
+ 		})
+ 	}
+ 	getKeys(source).forEach(function(key) {
+-		if (propertyIsUnsafe(target, key)) {
++		if (keyIsForbidden(key) || propertyIsUnsafe(target, key)) {
+ 			return
+ 		}
+ 
